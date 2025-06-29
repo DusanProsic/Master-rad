@@ -23,14 +23,18 @@ export class LoginPage {
   }
 
   async onSubmit() {
-    const { email, password } = this.loginForm.value;
-    this.error = null;
+  const { email, password } = this.loginForm.value;
+  this.error = null;
 
-    try {
-      await signInWithEmailAndPassword(this.auth, email, password);
-      this.router.navigate(['/dashboard']); // or wherever your app goes after login
-    } catch (err: any) {
-      this.error = err.message;
-    }
+  try {
+    console.log('Logging in with:', email, password); // debug
+    const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
+    console.log('Login successful:', userCredential); // debug
+
+    this.router.navigate(['/dashboard']); // or wherever you want to go after login
+  } catch (err: any) {
+    console.error('Login error:', err); // debug
+    this.error = err.message;
   }
+}
 }
