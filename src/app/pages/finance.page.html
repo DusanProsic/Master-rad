@@ -1,0 +1,44 @@
+<h2>Add Entry</h2>
+
+<form [formGroup]="financeForm" (ngSubmit)="onSubmit()">
+  <label>Description:</label>
+  <input type="text" formControlName="description" />
+  <div *ngIf="financeForm.get('description')?.invalid && financeForm.get('description')?.touched">
+    Description is required
+  </div>
+
+  <label>Amount:</label>
+  <input type="number" formControlName="amount" />
+  <div *ngIf="financeForm.get('amount')?.invalid && financeForm.get('amount')?.touched">
+    Enter a valid amount
+  </div>
+
+  <label>Type:</label>
+  <select formControlName="type">
+    <option value="income">Income</option>
+    <option value="expense">Expense</option>
+  </select>
+
+  <br /><br />
+  <button type="submit" [disabled]="financeForm.invalid">Save</button>
+</form>
+<h2>Saved Entries</h2>
+<table *ngIf="entries$ | async as entries">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Amount</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let entry of entries">
+      <td>{{ entry.timestamp?.toDate?.() | date: 'yyyy-MM-dd' }}</td>
+      <td>{{ entry.type }}</td>
+      <td>{{ entry.description }}</td>
+      <td>{{ entry.amount }}</td>
+    </tr>
+  </tbody>
+</table>
+
