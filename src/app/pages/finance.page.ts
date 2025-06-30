@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { Firestore, collection, addDoc, collectionData, deleteDoc, doc } from '@angular/fire/firestore';
+import { Firestore, collection, addDoc, collectionData, deleteDoc, doc, updateDoc  } from '@angular/fire/firestore';
 import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
 
@@ -71,25 +71,50 @@ export class FinancePage {
   setFilter(value: string) {
     this.filterType$.next(value);
   }
+  editingId: string | null = null;
+
+  editEntry(entry: any) {
+  this.editingId = entry.id;
+  this.financeForm.setValue({
+    description: entry.description,
+    amount: entry.amount,
+    type: entry.type
+  });
+}
+
+cancelEdit() {
+  this.editingId = null;
+  this.financeForm.reset({ type: 'expense' });
+}
 
   onSubmit() {
-    if (this.financeForm.valid) {
-      const formData = this.financeForm.value;
-      const entriesRef = collection(this.firestore, 'entries');
+  if (this.financeForm.valid) {
+    const formData = this.financeForm.value;
+    const entriesRef = collection(this.firestore, 'entries');
 
+    if (this.editingId) {
+      const docRef = doc(this.firestore, `entries/${this.editingId}`);
+      updateDoc(docRef, formData).then(() => {
+        console.log('Entry updated');
+        this.financeForm.reset({ type: 'expense' });
+        this.editingId = null;
+      }).catch(err => console.error('Update error:', err));
+    } else {
       addDoc(entriesRef, {
         ...formData,
         timestamp: new Date()
       }).then(() => {
         console.log('Data saved to Firestore');
-        this.financeForm.reset({ type: 'expense' }); // Reset and default to expense
+        this.financeForm.reset({ type: 'expense' });
       }).catch((error) => {
         console.error('Error saving data:', error);
       });
-    } else {
-      console.warn('Form is invalid');
     }
+  } else {
+    console.warn('Form is invalid');
   }
+}
+
 
   deleteEntry(id: string) {
     const docRef = doc(this.firestore, `entries/${id}`);
