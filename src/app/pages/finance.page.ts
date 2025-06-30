@@ -1,20 +1,48 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Firestore, collection, addDoc, collectionData, deleteDoc, doc } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   standalone: true,
   selector: 'app-finance',
   templateUrl: './finance.page.html',
   styleUrls: ['./finance.page.css'],
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
 })
 export class FinancePage {
   entries$: Observable<any[]>;
   financeForm: FormGroup;
+  filterType$ = new BehaviorSubject<string>('all');
+  
+  onFilterChange(event: Event) {
+  const select = event.target as HTMLSelectElement;
+  this.setFilter(select.value);
+}
+
+setFilter(value: string) {
+  this.filterType$.next(value);
+}
+  filteredEntries$!: Observable<any[]>;
+
+  ngOnInit() {
+    this.setupFilteredEntries();
+  }
+
+  setupFilteredEntries() {
+  this.filteredEntries$ = combineLatest([
+    this.entries$,
+    this.filterType$
+  ]).pipe(
+    map(([entries, filter]) => {
+      if (filter === 'all') return entries;
+      return entries.filter(entry => entry.type === filter);
+    })
+  );
+}
 
 
   constructor(private fb: FormBuilder, private firestore: Firestore) {

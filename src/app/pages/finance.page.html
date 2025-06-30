@@ -23,7 +23,13 @@
   <button type="submit" [disabled]="financeForm.invalid">Save</button>
 </form>
 <h2>Saved Entries</h2>
-<table *ngIf="entries$ | async as entries">
+<label for="filter">Filter by type:</label>
+<select id="filter" (change)="onFilterChange($event)">
+  <option value="all">All</option>
+  <option value="income">Income</option>
+  <option value="expense">Expense</option>
+</select>
+<table *ngIf="filteredEntries$ | async as entries">
   <thead>
     <tr>
       <th>Date</th>
