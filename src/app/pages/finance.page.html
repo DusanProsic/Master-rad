@@ -1,16 +1,16 @@
-<h2>Add Entry</h2>
+<h2>Finance Tracker</h2>
 
-<form [formGroup]="financeForm" (ngSubmit)="onSubmit()">
+<form [formGroup]="financeForm" (ngSubmit)="onSubmit()" class="form-box">
   <label>Description:</label>
   <input type="text" formControlName="description" />
   <div *ngIf="financeForm.get('description')?.invalid && financeForm.get('description')?.touched">
-    Description is required
+    <small style="color:red;">Description is required</small>
   </div>
 
   <label>Amount:</label>
   <input type="number" formControlName="amount" />
   <div *ngIf="financeForm.get('amount')?.invalid && financeForm.get('amount')?.touched">
-    Enter a valid amount
+    <small style="color:red;">Enter a valid amount</small>
   </div>
 
   <label>Type:</label>
@@ -20,28 +20,40 @@
   </select>
 
   <br /><br />
-  <button type="submit" [disabled]="financeForm.invalid">Save</button>
+  <button type="submit">{{ editingId ? 'Update' : 'Add Entry' }}</button>
+  <button type="button" *ngIf="editingId" (click)="cancelEdit()">Cancel</button>
 </form>
 
-<label for="month">Filter by Month:</label>
-<select id="month" (change)="onMonthChange($event)">
-  <option value="all">All</option>
-  <option *ngFor="let m of availableMonths" [value]="m">{{ m }}</option>
-</select>
+<hr />
 
-<h2>Saved Entries</h2>
-<label for="filter">Filter by type:</label>
-<select id="filter" (change)="onFilterChange($event)">
-  <option value="all">All</option>
-  <option value="income">Income</option>
-  <option value="expense">Expense</option>
-</select>
+<div class="filters">
+  <label for="filter">Filter by Type:</label>
+  <select id="filter" (change)="onFilterChange($event)">
+    <option value="all">All</option>
+    <option value="income">Income</option>
+    <option value="expense">Expense</option>
+  </select>
+
+  <label for="month" style="margin-left:1rem;">Filter by Month:</label>
+  <select id="month" (change)="onMonthChange($event)">
+    <option value="all">All</option>
+    <option *ngFor="let m of availableMonths" [value]="m">{{ m }}</option>
+  </select>
+</div>
+
+<hr />
+
 <div class="totals" *ngIf="totals$ | async as totals">
   <h3>Pregled finansija</h3>
   <p><strong>Prihodi:</strong> {{ totals.income | currency:'RSD':'symbol' }}</p>
   <p><strong>Troškovi:</strong> {{ totals.expense | currency:'RSD':'symbol' }}</p>
   <p><strong>Ušteda:</strong> {{ totals.savings | currency:'RSD':'symbol' }}</p>
 </div>
+
+<hr />
+
+<h2>Saved Entries</h2>
+
 <table *ngIf="filteredEntries$ | async as entries">
   <thead>
     <tr>
@@ -57,14 +69,11 @@
       <td>{{ entry.timestamp?.toDate?.() | date: 'yyyy-MM-dd' }}</td>
       <td>{{ entry.type }}</td>
       <td>{{ entry.description }}</td>
-      <td>{{ entry.amount }}</td>
-      <button (click)="editEntry(entry)">Edit</button>
-      <button type="button" *ngIf="editingId" (click)="cancelEdit()">Cancel Edit</button>
+      <td>{{ entry.amount | currency:'RSD':'symbol' }}</td>
       <td>
-  <button (click)="deleteEntry(entry.id)">Delete</button>
-</td>
-
+        <button (click)="editEntry(entry)">Edit</button>
+        <button (click)="deleteEntry(entry.id)">Delete</button>
+      </td>
     </tr>
   </tbody>
 </table>
-
