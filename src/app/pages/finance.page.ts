@@ -33,6 +33,17 @@ export class FinancePage {
 
   ngOnInit() {
     this.setupFilteredEntries();
+    this.entries$.subscribe(entries => {
+  const months = new Set<string>();
+
+  for (const entry of entries) {
+    const date = new Date(entry.timestamp?.seconds * 1000);
+    const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    months.add(month);
+  }
+
+  this.availableMonths = Array.from(months).sort().reverse(); // Latest month first
+});
 
     this.totals$ = this.filteredEntries$.pipe(
       map(entries => {
@@ -51,17 +62,39 @@ export class FinancePage {
     );
   }
 
+monthFilter$ = new BehaviorSubject<string>('all');
+availableMonths: string[] = [];
+
   setupFilteredEntries() {
-    this.filteredEntries$ = combineLatest([
-      this.entries$,
-      this.filterType$
-    ]).pipe(
-      map(([entries, filter]) => {
-        if (filter === 'all') return entries;
-        return entries.filter(entry => entry.type === filter);
-      })
-    );
-  }
+  this.filteredEntries$ = combineLatest([
+    this.entries$,
+    this.filterType$,
+    this.monthFilter$
+  ]).pipe(
+    map(([entries, typeFilter, monthFilter]) => {
+      let filtered = entries;
+
+      if (typeFilter !== 'all') {
+        filtered = filtered.filter(e => e.type === typeFilter);
+      }
+
+      if (monthFilter !== 'all') {
+        filtered = filtered.filter(e => {
+          const date = new Date(e.timestamp?.seconds * 1000); // Firestore timestamp
+          const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          return month === monthFilter;
+        });
+      }
+
+      return filtered;
+    })
+  );
+}
+
+onMonthChange(event: Event) {
+  const value = (event.target as HTMLSelectElement).value;
+  this.monthFilter$.next(value);
+}
 
   onFilterChange(event: Event) {
     const select = event.target as HTMLSelectElement;
