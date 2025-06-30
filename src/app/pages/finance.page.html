@@ -30,6 +30,7 @@
       <th>Type</th>
       <th>Description</th>
       <th>Amount</th>
+      <th>Actions</th>
     </tr>
   </thead>
   <tbody>
@@ -38,6 +39,10 @@
       <td>{{ entry.type }}</td>
       <td>{{ entry.description }}</td>
       <td>{{ entry.amount }}</td>
+      <td>
+  <button (click)="deleteEntry(entry.id)">Delete</button>
+</td>
+
     </tr>
   </tbody>
 </table>

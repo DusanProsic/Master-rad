@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
-import { Firestore, collection, addDoc, collectionData } from '@angular/fire/firestore';
+import { Firestore, collection, addDoc, collectionData, deleteDoc, doc } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -45,4 +45,11 @@ export class FinancePage {
     console.warn('Form is invalid');
   }
  }
+
+ deleteEntry(id: string) {
+  const docRef = doc(this.firestore, `entries/${id}`);
+  deleteDoc(docRef)
+    .then(() => console.log('Entry deleted'))
+    .catch((err) => console.error('Delete error:', err));
+}
 }
