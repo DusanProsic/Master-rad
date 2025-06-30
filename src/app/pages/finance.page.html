@@ -29,6 +29,11 @@
   <option value="income">Income</option>
   <option value="expense">Expense</option>
 </select>
+<div *ngIf="totals$ | async as totals" class="totals">
+  <p><strong>Total income:</strong> {{ totals.income | currency:'RSD' }}</p>
+  <p><strong>Total expenses:</strong> {{ totals.expense | currency:'RSD' }}</p>
+  <p><strong>Total savings:</strong> {{ totals.savings | currency:'RSD' }}</p>
+</div>
 <table *ngIf="filteredEntries$ | async as entries">
   <thead>
     <tr>

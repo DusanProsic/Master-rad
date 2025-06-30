@@ -17,33 +17,9 @@ export class FinancePage {
   entries$: Observable<any[]>;
   financeForm: FormGroup;
   filterType$ = new BehaviorSubject<string>('all');
-  
-  onFilterChange(event: Event) {
-  const select = event.target as HTMLSelectElement;
-  this.setFilter(select.value);
-}
 
-setFilter(value: string) {
-  this.filterType$.next(value);
-}
   filteredEntries$!: Observable<any[]>;
-
-  ngOnInit() {
-    this.setupFilteredEntries();
-  }
-
-  setupFilteredEntries() {
-  this.filteredEntries$ = combineLatest([
-    this.entries$,
-    this.filterType$
-  ]).pipe(
-    map(([entries, filter]) => {
-      if (filter === 'all') return entries;
-      return entries.filter(entry => entry.type === filter);
-    })
-  );
-}
-
+  totals$!: Observable<{ income: number; expense: number; savings: number }>;
 
   constructor(private fb: FormBuilder, private firestore: Firestore) {
     const entriesRef = collection(this.firestore, 'entries');
@@ -55,29 +31,70 @@ setFilter(value: string) {
     });
   }
 
- onSubmit() {
-  if (this.financeForm.valid) {
-    const formData = this.financeForm.value;
-    const entriesRef = collection(this.firestore, 'entries');
+  ngOnInit() {
+    this.setupFilteredEntries();
 
-    addDoc(entriesRef, {
-      ...formData,
-      timestamp: new Date()
-    }).then(() => {
-      console.log('Data saved to Firestore');
-      this.financeForm.reset({ type: 'expense' }); // Reset and default to expense
-    }).catch((error) => {
-      console.error('Error saving data:', error);
-    });
-  } else {
-    console.warn('Form is invalid');
+    this.totals$ = this.filteredEntries$.pipe(
+      map(entries => {
+        const income = entries
+          .filter(e => e.type === 'income')
+          .reduce((sum, e) => sum + e.amount, 0);
+        const expense = entries
+          .filter(e => e.type === 'expense')
+          .reduce((sum, e) => sum + e.amount, 0);
+        return {
+          income,
+          expense,
+          savings: income - expense
+        };
+      })
+    );
   }
- }
 
- deleteEntry(id: string) {
-  const docRef = doc(this.firestore, `entries/${id}`);
-  deleteDoc(docRef)
-    .then(() => console.log('Entry deleted'))
-    .catch((err) => console.error('Delete error:', err));
-}
+  setupFilteredEntries() {
+    this.filteredEntries$ = combineLatest([
+      this.entries$,
+      this.filterType$
+    ]).pipe(
+      map(([entries, filter]) => {
+        if (filter === 'all') return entries;
+        return entries.filter(entry => entry.type === filter);
+      })
+    );
+  }
+
+  onFilterChange(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    this.setFilter(select.value);
+  }
+
+  setFilter(value: string) {
+    this.filterType$.next(value);
+  }
+
+  onSubmit() {
+    if (this.financeForm.valid) {
+      const formData = this.financeForm.value;
+      const entriesRef = collection(this.firestore, 'entries');
+
+      addDoc(entriesRef, {
+        ...formData,
+        timestamp: new Date()
+      }).then(() => {
+        console.log('Data saved to Firestore');
+        this.financeForm.reset({ type: 'expense' }); // Reset and default to expense
+      }).catch((error) => {
+        console.error('Error saving data:', error);
+      });
+    } else {
+      console.warn('Form is invalid');
+    }
+  }
+
+  deleteEntry(id: string) {
+    const docRef = doc(this.firestore, `entries/${id}`);
+    deleteDoc(docRef)
+      .then(() => console.log('Entry deleted'))
+      .catch((err) => console.error('Delete error:', err));
+  }
 }
