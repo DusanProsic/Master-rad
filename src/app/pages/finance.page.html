@@ -50,9 +50,12 @@
   <p><strong>Ušteda:</strong> {{ totals.savings | currency:'RSD':'symbol' }}</p>
 </div>
 
+
 <hr />
 
 <h2>Saved Entries</h2>
+
+<app-finance-chart [totals$]="totals$" />
 
 <table *ngIf="filteredEntries$ | async as entries">
   <thead>
@@ -77,3 +80,4 @@
     </tr>
   </tbody>
 </table>
+

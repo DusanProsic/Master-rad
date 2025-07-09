@@ -5,13 +5,14 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Firestore, collection, addDoc, collectionData, deleteDoc, doc, updateDoc  } from '@angular/fire/firestore';
 import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { FinanceChartComponent } from '../components/finance-chart.component';
 
 @Component({
   standalone: true,
   selector: 'app-finance',
   templateUrl: './finance.page.html',
   styleUrls: ['./finance.page.css'],
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, FinanceChartComponent],
 })
 export class FinancePage {
   entries$: Observable<any[]>;
