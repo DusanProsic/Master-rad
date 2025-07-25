@@ -1,10 +1,13 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { Auth, signOut } from '@angular/fire/auth';
+import { BudgetGoalsComponent } from '../components/budget-goals.component';
+
+
 
 @Component({
   selector: 'app-dashboard',
-  imports: [],
+  imports: [BudgetGoalsComponent],
   templateUrl: './dashboard.page.html',
   styleUrl: './dashboard.page.css'
 })

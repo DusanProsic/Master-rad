@@ -1,0 +1,29 @@
+<h3>Budget Goals</h3>
+
+<form (ngSubmit)="editingId ? updateGoal() : addGoal()">
+  <input type="text" [(ngModel)]="newGoal.name" name="name" placeholder="Goal name" required>
+  <input type="number" [(ngModel)]="newGoal.target" name="target" placeholder="Target amount" required>
+  <button type="submit">{{ editingId ? 'Update' : 'Add' }}</button>
+  <button type="button" *ngIf="editingId" (click)="cancelEdit()">Cancel</button>
+</form>
+
+<ul>
+  <li *ngFor="let goal of goals$ | async">
+    {{ goal.name }} — {{ goal.target | currency }}
+    <button (click)="editGoal(goal)">Edit</button>
+    <button (click)="deleteGoal(goal.id)">Delete</button>
+  </li>
+</ul>
+
+<div *ngFor="let goal of goalsWithProgress$ | async" class="goal-card">
+  <h3>{{ goal.name }}</h3>
+  <p>Target: {{ goal.target }}</p>
+  <p>Spent: {{ goal.spent }}</p>
+  <p>Remaining: {{ goal.remaining }}</p>
+  <progress [value]="goal.percent" max="100"></progress>
+  <p>{{ goal.percent | number:'1.0-0' }}% complete</p>
+
+  <button (click)="editGoal(goal)">Edit</button>
+  <button (click)="deleteGoal(goal.id)">Delete</button>
+</div>
+

@@ -22,13 +22,18 @@ export class FinancePage {
   filteredEntries$!: Observable<any[]>;
   totals$!: Observable<{ income: number; expense: number; savings: number }>;
 
+  goals$!: Observable<any[]>;
+
   constructor(private fb: FormBuilder, private firestore: Firestore) {
     const entriesRef = collection(this.firestore, 'entries');
+     const goalsRef = collection(this.firestore, 'goals');
+  this.goals$ = collectionData(goalsRef, { idField: 'id' });
     this.entries$ = collectionData(entriesRef, { idField: 'id' });
     this.financeForm = this.fb.group({
       description: ['', Validators.required],
       amount: [null, [Validators.required, Validators.min(0.01)]],
       type: ['expense', Validators.required],
+      goalId: ['']
     });
   }
 
@@ -92,6 +97,7 @@ availableMonths: string[] = [];
   );
 }
 
+
 onMonthChange(event: Event) {
   const value = (event.target as HTMLSelectElement).value;
   this.monthFilter$.next(value);
@@ -107,12 +113,13 @@ onMonthChange(event: Event) {
   }
   editingId: string | null = null;
 
-  editEntry(entry: any) {
+ editEntry(entry: any) {
   this.editingId = entry.id;
   this.financeForm.setValue({
     description: entry.description,
     amount: entry.amount,
-    type: entry.type
+    type: entry.type,
+    goalId: entry.goalId || ''
   });
 }
 
@@ -126,18 +133,22 @@ cancelEdit() {
     const formData = this.financeForm.value;
     const entriesRef = collection(this.firestore, 'entries');
 
+    // Ensure goalId is null if empty
+    const entryData = {
+      ...formData,
+      goalId: formData.goalId || null,
+      timestamp: new Date()
+    };
+
     if (this.editingId) {
       const docRef = doc(this.firestore, `entries/${this.editingId}`);
-      updateDoc(docRef, formData).then(() => {
+      updateDoc(docRef, entryData).then(() => {
         console.log('Entry updated');
         this.financeForm.reset({ type: 'expense' });
         this.editingId = null;
       }).catch(err => console.error('Update error:', err));
     } else {
-      addDoc(entriesRef, {
-        ...formData,
-        timestamp: new Date()
-      }).then(() => {
+      addDoc(entriesRef, entryData).then(() => {
         console.log('Data saved to Firestore');
         this.financeForm.reset({ type: 'expense' });
       }).catch((error) => {

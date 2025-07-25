@@ -81,3 +81,18 @@
   </tbody>
 </table>
 
+<div>
+  <label for="goal">Associated Goal (optional):</label>
+  <select id="goal" formControlName="goalId">
+    <option value="">-- None --</option>
+    <option *ngFor="let goal of goals$ | async" [value]="goal.id">
+      {{ goal.name }}
+    </option>
+  </select>
+</div>
+
+<label for="goalId">Budget Goal (optional):</label>
+<select formControlName="goalId">
+  <option value="">-- None --</option>
+  <option *ngFor="let goal of goals$ | async" [value]="goal.id">{{ goal.name }}</option>
+</select>
