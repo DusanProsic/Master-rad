@@ -1,5 +1,6 @@
 <h3>Budget Goals</h3>
 
+<!-- Goal Creation/Editing Form -->
 <form (ngSubmit)="editingId ? updateGoal() : addGoal()">
   <input type="text" [(ngModel)]="newGoal.name" name="name" placeholder="Goal name" required>
   <input type="number" [(ngModel)]="newGoal.target" name="target" placeholder="Target amount" required>
@@ -7,23 +8,31 @@
   <button type="button" *ngIf="editingId" (click)="cancelEdit()">Cancel</button>
 </form>
 
+<!-- Goal List -->
 <ul>
   <li *ngFor="let goal of goals$ | async">
-    {{ goal.name }} — {{ goal.target | currency }}
+    {{ goal.name }} — {{ goal.target | currency:'RSD':'symbol':'1.0-0' }}
     <button (click)="editGoal(goal)">Edit</button>
     <button (click)="deleteGoal(goal.id)">Delete</button>
   </li>
 </ul>
 
+<!-- Goals with Progress -->
 <div *ngFor="let goal of goalsWithProgress$ | async" class="goal-card">
   <h3>{{ goal.name }}</h3>
-  <p>Target: {{ goal.target }}</p>
-  <p>Spent: {{ goal.spent }}</p>
-  <p>Remaining: {{ goal.remaining }}</p>
-  <progress [value]="goal.percent" max="100"></progress>
+  <p>Target: {{ goal.target | currency:'RSD':'symbol':'1.0-0' }}</p>
+  <p>Current Savings: {{ goal.currentSavings | currency:'RSD':'symbol':'1.0-0' }}</p>
+  <p *ngIf="goal.remaining > 0">Remaining: {{ goal.remaining | currency:'RSD':'symbol':'1.0-0' }}</p>
+  <p *ngIf="goal.remaining <= 0">Goal Reached!</p>
+
+  <!-- Custom Progress Bar -->
+  <div class="progress-bar">
+    <div class="progress" [style.width.%]="goal.percent"></div>
+  </div>
   <p>{{ goal.percent | number:'1.0-0' }}% complete</p>
 
   <button (click)="editGoal(goal)">Edit</button>
   <button (click)="deleteGoal(goal.id)">Delete</button>
 </div>
+
 

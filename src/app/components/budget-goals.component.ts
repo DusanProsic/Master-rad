@@ -14,37 +14,51 @@ import { Observable, combineLatest, map } from 'rxjs';
 export class BudgetGoalsComponent implements OnInit {
   goals$: Observable<any[]>;
   entries$: Observable<any[]>;
+  goalsWithProgress$!: Observable<any[]>;
+
   newGoal = { name: '', target: 0 };
   editingId: string | null = null;
 
   constructor(private firestore: Firestore) {
+    // Firestore collections
     const entriesRef = collection(this.firestore, 'entries');
-this.entries$ = collectionData(entriesRef, { idField: 'id' });
+    this.entries$ = collectionData(entriesRef, { idField: 'id' });
+
     const goalsRef = collection(this.firestore, 'budgetGoals');
     this.goals$ = collectionData(goalsRef, { idField: 'id' });
   }
-goalsWithProgress$!: Observable<any[]>;
 
   ngOnInit(): void {
-  this.goalsWithProgress$ = combineLatest([this.goals$, this.entries$]).pipe(
-    map(([goals, entries]) => {
-      return goals.map(goal => {
-        const goalEntries = entries.filter(e => e.goalId === goal.id);
-        const spent = goalEntries.reduce((sum, e) => sum + e.amount, 0);
-        const percent = Math.min((spent / goal.target) * 100, 100);
-        const remaining = goal.target - spent;
+    this.goalsWithProgress$ = combineLatest([this.goals$, this.entries$]).pipe(
+      map(([goals, entries]) => {
+        // Calculate total savings (income - expense)
+        const totalIncome = entries
+          .filter(e => e.type === 'income')
+          .reduce((sum, e) => sum + e.amount, 0);
 
-        return {
-          ...goal,
-          spent,
-          percent,
-          remaining
-        };
-      });
-    })
-  );
-}
+        const totalExpense = entries
+          .filter(e => e.type === 'expense')
+          .reduce((sum, e) => sum + e.amount, 0);
 
+        const currentSavings = totalIncome - totalExpense;
+
+        // Map each goal with its progress
+        return goals.map(goal => {
+          const percent = Math.min((currentSavings / goal.target) * 100, 100);
+          const remaining = goal.target - currentSavings;
+
+          return {
+            ...goal,
+            currentSavings,
+            percent,
+            remaining
+          };
+        });
+      })
+    );
+  }
+
+  // Add new goal
   async addGoal() {
     const goalsRef = collection(this.firestore, 'budgetGoals');
     if (this.newGoal.name && this.newGoal.target > 0) {
@@ -53,6 +67,7 @@ goalsWithProgress$!: Observable<any[]>;
     }
   }
 
+  // Edit existing goal
   editGoal(goal: any) {
     this.editingId = goal.id;
     this.newGoal = { name: goal.name, target: goal.target };

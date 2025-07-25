@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -22,12 +22,12 @@ export class FinancePage {
   filteredEntries$!: Observable<any[]>;
   totals$!: Observable<{ income: number; expense: number; savings: number }>;
 
-  goals$!: Observable<any[]>;
+  budgetGoals$!: Observable<any[]>;
 
   constructor(private fb: FormBuilder, private firestore: Firestore) {
     const entriesRef = collection(this.firestore, 'entries');
-     const goalsRef = collection(this.firestore, 'goals');
-  this.goals$ = collectionData(goalsRef, { idField: 'id' });
+     const budgetGoalsRef = collection(this.firestore, 'budgetGoals');
+  this.budgetGoals$ = collectionData(budgetGoalsRef, { idField: 'id' });
     this.entries$ = collectionData(entriesRef, { idField: 'id' });
     this.financeForm = this.fb.group({
       description: ['', Validators.required],
