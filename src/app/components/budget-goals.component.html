@@ -8,14 +8,10 @@
   <button type="button" *ngIf="editingId" (click)="cancelEdit()">Cancel</button>
 </form>
 
-<!-- Goal List -->
-<ul>
-  <li *ngFor="let goal of goals$ | async">
-    {{ goal.name }} — {{ goal.target | currency:'RSD':'symbol':'1.0-0' }}
-    <button (click)="editGoal(goal)">Edit</button>
-    <button (click)="deleteGoal(goal.id)">Delete</button>
-  </li>
-</ul>
+<!-- No Goals Message -->
+<div *ngIf="(goalsWithProgress$ | async)?.length === 0">
+  <p>No goals yet. Add one above!</p>
+</div>
 
 <!-- Goals with Progress -->
 <div *ngFor="let goal of goalsWithProgress$ | async" class="goal-card">
@@ -25,7 +21,7 @@
   <p *ngIf="goal.remaining > 0">Remaining: {{ goal.remaining | currency:'RSD':'symbol':'1.0-0' }}</p>
   <p *ngIf="goal.remaining <= 0">Goal Reached!</p>
 
-  <!-- Custom Progress Bar -->
+  <!-- Progress Bar -->
   <div class="progress-bar">
     <div class="progress" [style.width.%]="goal.percent"></div>
   </div>
@@ -34,5 +30,3 @@
   <button (click)="editGoal(goal)">Edit</button>
   <button (click)="deleteGoal(goal.id)">Delete</button>
 </div>
-
-

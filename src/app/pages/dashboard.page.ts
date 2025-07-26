@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Auth, signOut } from '@angular/fire/auth';
 import { BudgetGoalsComponent } from '../components/budget-goals.component';
@@ -7,7 +8,8 @@ import { BudgetGoalsComponent } from '../components/budget-goals.component';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [BudgetGoalsComponent],
+  standalone: true,
+  imports: [CommonModule, BudgetGoalsComponent],
   templateUrl: './dashboard.page.html',
   styleUrl: './dashboard.page.css'
 })
