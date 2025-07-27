@@ -5,40 +5,37 @@
   <input type="text" formControlName="description" placeholder="Description" required>
   <input type="number" formControlName="amount" placeholder="Amount" required>
 
-  <!-- Type Dropdown -->
   <select formControlName="type">
     <option value="expense">Expense</option>
     <option value="income">Income</option>
   </select>
 
-  <!-- Goal Dropdown -->
   <label for="goal">Associated Goal (optional):</label>
   <select formControlName="goalId">
     <option value="">-- None --</option>
-    <option *ngFor="let goal of goals$ | async" [value]="goal.id">{{ goal.name }}</option>
+    <option *ngFor="let goal of goals$ | async" [value]="goal.id">
+      {{ goal.name }}
+    </option>
   </select>
 
-  <!-- Display Selected Goal -->
-  <p *ngIf="selectedGoalName">Selected Goal: {{ selectedGoalName }}</p>
+  <!-- Selected Goal Info -->
+  <div *ngIf="selectedGoalName" class="selected-goal">
+    <p>
+      <strong>Selected Goal:</strong> {{ selectedGoalName }}
+      (Target: {{ selectedGoalTarget | currency:'RSD':'symbol':'1.0-0' }})
+    </p>
+    <p>Progress: {{ selectedGoalProgress | number:'1.0-0' }}%</p>
+    <p>Remaining: {{ selectedGoalRemaining | currency:'RSD':'symbol':'1.0-0' }}</p>
+    <div class="progress-bar">
+      <div class="progress" [style.width.%]="selectedGoalProgress"></div>
+    </div>
+  </div>
 
   <button type="submit">{{ editingId ? 'Update' : 'Add' }}</button>
   <button type="button" *ngIf="editingId" (click)="cancelEdit()">Cancel</button>
 </form>
 
-<p *ngIf="selectedGoalName">
-  Selected Goal: {{ selectedGoalName }}  
-  (Target: {{ selectedGoalTarget | currency:'RSD':'symbol':'1.0-0' }})
-</p>
-
-<div *ngIf="selectedGoalName" class="goal-progress">
-  <p>Progress: {{ selectedGoalProgress | number:'1.0-0' }}%</p>
-  <p>Remaining: {{ selectedGoalRemaining | currency:'RSD':'symbol':'1.0-0' }}</p>
-  <div class="progress-bar">
-    <div class="progress" [style.width.%]="selectedGoalProgress"></div>
-  </div>
-</div>
-
-<!-- Filters -->
+<!-- Filters Section -->
 <div class="filters">
   <label>Filter by Type:</label>
   <select (change)="onFilterChange($event)">
@@ -47,16 +44,19 @@
     <option value="expense">Expense</option>
   </select>
 
-  <label>Filter by Month:</label>
-  <select (change)="onMonthChange($event)">
+  <label>Filter by Date:</label>
+  <input type="date" (change)="onDateChange($event)">
+
+  <label>Filter by Goal:</label>
+  <select (change)="onGoalFilterChange($event)">
     <option value="all">All</option>
-    <option *ngFor="let month of availableMonths" [value]="month">{{ month }}</option>
+    <option *ngFor="let goal of goals$ | async" [value]="goal.id">{{ goal.name }}</option>
   </select>
 </div>
 
 <!-- Finance Entries -->
 <div *ngIf="(filteredEntries$ | async)?.length === 0">
-  <p>No entries yet. Add one above!</p>
+  <p>No entries match the filters.</p>
 </div>
 
 <ul class="entries-list">
@@ -64,18 +64,33 @@
     {{ entry.description }} - {{ entry.amount | currency:'RSD':'symbol':'1.0-0' }} ({{ entry.type }})
     <span *ngIf="entry.goalId">
       | Goal: {{ getGoalName(entry.goalId) }}
+      | Contribution: {{ getEntryGoalProgress(entry) | number:'1.0-0' }}%
+      | Goal Progress: {{ getGoalOverallProgress(entry.goalId) | number:'1.0-0' }}%
     </span>
+    <div *ngIf="entry.goalId" class="entry-progress-bar">
+      <div class="progress" [style.width.%]="getEntryGoalProgress(entry)"></div>
+    </div>
     <button (click)="editEntry(entry)">Edit</button>
     <button (click)="deleteEntry(entry.id)">Delete</button>
   </li>
 </ul>
 
-<!-- Summary Bar -->
+<!-- Filtered Totals -->
 <div class="summary-bar" *ngIf="totals$ | async as totals">
-  <p><strong>Total Income:</strong> {{ totals.income | currency:'RSD':'symbol':'1.0-0' }}</p>
-  <p><strong>Total Expenses:</strong> {{ totals.expense | currency:'RSD':'symbol':'1.0-0' }}</p>
-  <p><strong>Total Savings:</strong> {{ totals.savings | currency:'RSD':'symbol':'1.0-0' }}</p>
+  <p><strong>Filtered Income:</strong> {{ totals.income | currency:'RSD':'symbol':'1.0-0' }}</p>
+  <p><strong>Filtered Expenses:</strong> {{ totals.expense | currency:'RSD':'symbol':'1.0-0' }}</p>
+  <p><strong>Filtered Savings:</strong> {{ totals.savings | currency:'RSD':'symbol':'1.0-0' }}</p>
 </div>
 
 <!-- Finance Chart -->
 <app-finance-chart [totals$]="totals$"></app-finance-chart>
+
+<!-- Debug Data -->
+<div class="debug-section" style="margin-top: 20px; background: #f4f4f4; padding: 10px;">
+  <h4>Debug Entries:</h4>
+  <pre>{{ entries$ | async | json }}</pre>
+  <h4>Debug Goals:</h4>
+  <pre>{{ goals$ | async | json }}</pre>
+  <h4>Goal Progress Map:</h4>
+  <pre>{{ goalProgressMap | json }}</pre>
+</div>

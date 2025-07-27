@@ -29,16 +29,18 @@ export class BudgetGoalsComponent implements OnInit {
   ngOnInit(): void {
     this.goalsWithProgress$ = combineLatest([this.goals$, this.entries$]).pipe(
       map(([goals, entries]) => {
-        const totalIncome = entries.filter(e => e.type === 'income')
-                                   .reduce((sum, e) => sum + e.amount, 0);
-        const totalExpense = entries.filter(e => e.type === 'expense')
-                                    .reduce((sum, e) => sum + e.amount, 0);
-        const currentSavings = totalIncome - totalExpense;
-
         return goals.map(goal => {
-          const percent = Math.min((currentSavings / goal.target) * 100, 100);
-          const remaining = goal.target - currentSavings;
-          return { ...goal, currentSavings, percent, remaining };
+          // Filter entries linked to this goal
+          const goalEntries = entries.filter(e => e.goalId === goal.id);
+
+          // Calculate total amount spent or saved for this goal
+          const totalForGoal = goalEntries.reduce((sum, e) => sum + e.amount, 0);
+
+          // Calculate percentage and remaining
+          const percent = goal.target > 0 ? Math.min((totalForGoal / goal.target) * 100, 100) : 0;
+          const remaining = Math.max(goal.target - totalForGoal, 0);
+
+          return { ...goal, totalForGoal, percent, remaining };
         });
       })
     );

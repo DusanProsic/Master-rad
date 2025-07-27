@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { Firestore, collection, addDoc, deleteDoc, doc, updateDoc, collectionData } from '@angular/fire/firestore';
+import { Firestore, collection, addDoc, deleteDoc, doc, updateDoc, collectionData, serverTimestamp } from '@angular/fire/firestore';
 import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { GoalService, Goal } from '../components/goal-service.component';
@@ -18,16 +18,18 @@ import { FinanceChartComponent } from '../components/finance-chart.component';
 export class FinancePage implements OnInit {
   entries$: Observable<any[]>;
   goals$: Observable<Goal[]>;
-  latestGoals: Goal[] = [];                // <-- Cached goals array
+  latestGoals: Goal[] = [];
+  goalProgressMap: { [goalId: string]: number } = {};
+
   selectedGoalName: string = '';
+  selectedGoalTarget: number = 0;
+  selectedGoalRemaining: number = 0;
   selectedGoalProgress: number = 0;
-selectedGoalTarget: number = 0;
-selectedGoalRemaining: number = 0;
 
   financeForm: FormGroup;
   filterType$ = new BehaviorSubject<string>('all');
-  monthFilter$ = new BehaviorSubject<string>('all');
-  availableMonths: string[] = [];
+  dateFilter$ = new BehaviorSubject<string>('all');
+  goalFilter$ = new BehaviorSubject<string>('all');
 
   filteredEntries$!: Observable<any[]>;
   totals$!: Observable<{ income: number; expense: number; savings: number }>;
@@ -38,14 +40,12 @@ selectedGoalRemaining: number = 0;
     private firestore: Firestore,
     private goalService: GoalService
   ) {
-    // Load entries
     const entriesRef = collection(this.firestore, 'entries');
     this.entries$ = collectionData(entriesRef, { idField: 'id' });
 
-    // Load goals
     this.goals$ = this.goalService.getGoals();
+    this.goals$.subscribe(goals => (this.latestGoals = goals));
 
-    // Initialize form
     this.financeForm = this.fb.group({
       description: ['', Validators.required],
       amount: [null, [Validators.required, Validators.min(0.01)]],
@@ -57,98 +57,79 @@ selectedGoalRemaining: number = 0;
   ngOnInit() {
     this.setupFilteredEntries();
 
-    // Cache goals for lookups
-    this.goals$.subscribe((goals: Goal[]) => {
-      this.latestGoals = goals;
+    this.financeForm.get('goalId')?.valueChanges.subscribe(goalId => {
+      this.selectedGoalName = this.getGoalName(goalId);
+      this.updateGoalProgressPreview();
     });
 
-   // Track selected goal name and progress
-this.financeForm.get('goalId')?.valueChanges.subscribe(goalId => {
-  if (!goalId) {
-    this.selectedGoalName = '';
-    this.selectedGoalTarget = 0;
-    this.selectedGoalRemaining = 0;
-    this.selectedGoalProgress = 0;
-    return;
-  }
+    this.financeForm.valueChanges.subscribe(() => this.updateGoalProgressPreview());
 
-  const selectedGoal = this.latestGoals.find(g => g.id === goalId);
-  this.selectedGoalName = selectedGoal ? selectedGoal.name : '';
-  this.selectedGoalTarget = selectedGoal?.target || 0;
+    // Precompute goal totals
+    combineLatest([this.goals$, this.entries$]).subscribe(([goals, entries]) => {
+      this.goalProgressMap = {};
+      for (const goal of goals) {
+        const goalEntries = entries.filter(e => e.goalId === goal.id);
+        const totalForGoal = goalEntries.reduce((sum, e) =>
+          sum + (e.type === 'income' ? e.amount : -e.amount), 0
+        );
+        this.goalProgressMap[goal.id] = Math.min((totalForGoal / goal.target) * 100, 100);
+      }
+    });
 
-  // Calculate savings from all entries
-  this.entries$.subscribe(entries => {
-    const income = entries
-      .filter(e => e.type === 'income')
-      .reduce((sum, e) => sum + e.amount, 0);
-    const expense = entries
-      .filter(e => e.type === 'expense')
-      .reduce((sum, e) => sum + e.amount, 0);
-    const savings = income - expense;
-
-    this.selectedGoalRemaining = Math.max(this.selectedGoalTarget - savings, 0);
-    this.selectedGoalProgress = this.selectedGoalTarget > 0
-      ? Math.min((savings / this.selectedGoalTarget) * 100, 100)
-      : 0;
-  }).unsubscribe();
-});
-
-    // Totals
+    // Filtered totals
     this.totals$ = this.filteredEntries$.pipe(
       map(entries => {
-        const income = entries
-          .filter(e => e.type === 'income')
-          .reduce((sum, e) => sum + e.amount, 0);
-        const expense = entries
-          .filter(e => e.type === 'expense')
-          .reduce((sum, e) => sum + e.amount, 0);
+        const income = entries.filter(e => e.type === 'income').reduce((sum, e) => sum + e.amount, 0);
+        const expense = entries.filter(e => e.type === 'expense').reduce((sum, e) => sum + e.amount, 0);
         return { income, expense, savings: income - expense };
       })
     );
-  }
-
-  // Helper: Get goal name from cached goals
-  getGoalName(goalId: string | null): string {
-    if (!goalId) return '';
-    const goal = this.latestGoals.find(g => g.id === goalId);
-    return goal ? goal.name : '';
   }
 
   setupFilteredEntries() {
     this.filteredEntries$ = combineLatest([
       this.entries$,
       this.filterType$,
-      this.monthFilter$
+      this.dateFilter$,
+      this.goalFilter$
     ]).pipe(
-      map(([entries, typeFilter, monthFilter]) => {
+      map(([entries, typeFilter, dateFilter, goalFilter]) => {
         let filtered = entries;
+
         if (typeFilter !== 'all') {
           filtered = filtered.filter(e => e.type === typeFilter);
         }
-        if (monthFilter !== 'all') {
+
+        if (dateFilter !== 'all') {
           filtered = filtered.filter(e => {
             const date = new Date(e.timestamp?.seconds * 1000);
-            const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-            return month === monthFilter;
+            const formatted = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            return formatted === dateFilter;
           });
         }
+
+        if (goalFilter !== 'all') {
+          filtered = filtered.filter(e => e.goalId === goalFilter);
+        }
+
         return filtered;
       })
     );
   }
 
-  onMonthChange(event: Event) {
+  onDateChange(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    this.dateFilter$.next(value || 'all');
+  }
+
+  onGoalFilterChange(event: Event) {
     const value = (event.target as HTMLSelectElement).value;
-    this.monthFilter$.next(value);
+    this.goalFilter$.next(value || 'all');
   }
 
   onFilterChange(event: Event) {
     const select = event.target as HTMLSelectElement;
-    this.setFilter(select.value);
-  }
-
-  setFilter(value: string) {
-    this.filterType$.next(value);
+    this.filterType$.next(select.value);
   }
 
   editEntry(entry: any) {
@@ -159,14 +140,16 @@ this.financeForm.get('goalId')?.valueChanges.subscribe(goalId => {
       type: entry.type,
       goalId: entry.goalId || ''
     });
+    this.updateGoalProgressPreview();
   }
 
   cancelEdit() {
     this.editingId = null;
     this.financeForm.reset({ type: 'expense', goalId: '' });
+    this.updateGoalProgressPreview();
   }
 
-  onSubmit() {
+  async onSubmit() {
     if (this.financeForm.valid) {
       const formData = this.financeForm.value;
       const entriesRef = collection(this.firestore, 'entries');
@@ -174,27 +157,75 @@ this.financeForm.get('goalId')?.valueChanges.subscribe(goalId => {
       const entryData = {
         ...formData,
         goalId: formData.goalId || null,
-        timestamp: new Date()
+        timestamp: serverTimestamp()
       };
 
       if (this.editingId) {
         const docRef = doc(this.firestore, `entries/${this.editingId}`);
-        updateDoc(docRef, entryData).then(() => {
-          this.financeForm.reset({ type: 'expense', goalId: '' });
-          this.editingId = null;
-        });
+        await updateDoc(docRef, entryData);
+        this.editingId = null;
       } else {
-        addDoc(entriesRef, entryData).then(() => {
-          this.financeForm.reset({ type: 'expense', goalId: '' });
-        });
+        await addDoc(entriesRef, entryData);
       }
-    } else {
-      console.warn('Form is invalid');
+
+      this.financeForm.reset({ type: 'expense', goalId: '' });
+      this.updateGoalProgressPreview();
     }
   }
 
-  deleteEntry(id: string) {
+  async deleteEntry(id: string) {
     const docRef = doc(this.firestore, `entries/${id}`);
-    deleteDoc(docRef).catch(err => console.error('Delete error:', err));
+    await deleteDoc(docRef);
+    this.updateGoalProgressPreview();
+  }
+
+  getGoalName(goalId: string | null): string {
+    if (!goalId) return '';
+    const goal = this.latestGoals.find(g => g.id === goalId);
+    return goal ? goal.name : '';
+  }
+
+  getEntryGoalProgress(entry: any): number {
+    if (!entry.goalId) return 0;
+    const goal = this.latestGoals.find(g => g.id === entry.goalId);
+    if (!goal || goal.target === 0) return 0;
+    return Math.min((entry.amount / goal.target) * 100, 100);
+  }
+
+  getGoalOverallProgress(goalId: string): number {
+    return this.goalProgressMap[goalId] || 0;
+  }
+
+  updateGoalProgressPreview() {
+    const goalId = this.financeForm.get('goalId')?.value;
+
+    if (!goalId) {
+      this.selectedGoalProgress = 0;
+      this.selectedGoalRemaining = 0;
+      this.selectedGoalTarget = 0;
+      return;
+    }
+
+    const newAmount = this.financeForm.get('amount')?.value || 0;
+    const selectedGoal = this.latestGoals.find(g => g.id === goalId);
+    this.selectedGoalTarget = selectedGoal?.target || 0;
+
+    this.entries$.subscribe(entries => {
+      const goalEntries = entries.filter(e => e.goalId === goalId);
+      const totalForGoal = goalEntries.reduce((sum, e) =>
+        sum + (e.type === 'income' ? e.amount : -e.amount), 0
+      );
+
+      const previewTotal = totalForGoal + (
+        this.financeForm.get('amount')?.value
+          ? (this.financeForm.get('type')?.value === 'income' ? newAmount : -newAmount)
+          : 0
+      );
+
+      this.selectedGoalRemaining = Math.max(this.selectedGoalTarget - previewTotal, 0);
+      this.selectedGoalProgress = this.selectedGoalTarget > 0
+        ? Math.min((previewTotal / this.selectedGoalTarget) * 100, 100)
+        : 0;
+    }).unsubscribe();
   }
 }
