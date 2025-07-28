@@ -7,6 +7,7 @@ import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { GoalService, Goal } from '../components/goal-service.component';
 import { FinanceChartComponent } from '../components/finance-chart.component';
+import { ThemeService } from '../services/theme.service';
 
 @Component({
   standalone: true,
@@ -38,7 +39,8 @@ export class FinancePage implements OnInit {
   constructor(
     private fb: FormBuilder,
     private firestore: Firestore,
-    private goalService: GoalService
+    private goalService: GoalService,
+    public themeService: ThemeService // public so we can access it in template
   ) {
     const entriesRef = collection(this.firestore, 'entries');
     this.entries$ = collectionData(entriesRef, { idField: 'id' });
@@ -227,5 +229,10 @@ export class FinancePage implements OnInit {
         ? Math.min((previewTotal / this.selectedGoalTarget) * 100, 100)
         : 0;
     }).unsubscribe();
+  }
+
+  // Dark mode toggle (using ThemeService)
+  toggleDarkMode() {
+    this.themeService.toggleDarkMode();
   }
 }

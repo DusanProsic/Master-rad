@@ -1,5 +1,14 @@
 <h2>Finance Tracker</h2>
 
+<!-- Dark Mode Toggle -->
+<div class="dark-mode-toggle">
+  <label class="switch">
+    <input type="checkbox" [checked]="themeService.isDarkMode()" (change)="toggleDarkMode()">
+    <span class="slider round"></span>
+  </label>
+  <span>{{ themeService.getCurrentTheme() }} Mode</span>
+</div>
+
 <!-- Finance Entry Form -->
 <form [formGroup]="financeForm" (ngSubmit)="onSubmit()" class="finance-form">
   <input type="text" formControlName="description" placeholder="Description" required>
@@ -86,11 +95,13 @@
 <app-finance-chart [totals$]="totals$"></app-finance-chart>
 
 <!-- Debug Data -->
-<div class="debug-section" style="margin-top: 20px; background: #f4f4f4; padding: 10px;">
+<div class="debug-section" style="margin-top: 20px;">
   <h4>Debug Entries:</h4>
+  <p>Theme: {{ themeService.getCurrentTheme() }}</p>
   <pre>{{ entries$ | async | json }}</pre>
   <h4>Debug Goals:</h4>
   <pre>{{ goals$ | async | json }}</pre>
   <h4>Goal Progress Map:</h4>
   <pre>{{ goalProgressMap | json }}</pre>
+  
 </div>
