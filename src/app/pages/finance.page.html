@@ -86,14 +86,3 @@
 <!-- Finance Chart -->
 <app-finance-chart [totals$]="totals$"></app-finance-chart>
 
-<!-- Debug Data -->
-<div class="debug-section" style="margin-top: 20px;">
-  <h4>Debug Entries:</h4>
-  <p>Theme: {{ themeService.getCurrentTheme() }}</p>
-  <pre>{{ entries$ | async | json }}</pre>
-  <h4>Debug Goals:</h4>
-  <pre>{{ goals$ | async | json }}</pre>
-  <h4>Goal Progress Map:</h4>
-  <pre>{{ goalProgressMap | json }}</pre>
-  
-</div>

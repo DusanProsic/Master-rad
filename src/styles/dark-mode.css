@@ -2,6 +2,23 @@
    Dark Mode Global Styles
    ========================= */
 
+   html,
+body,
+app-root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #fff; /* fallback for light mode */
+  transition: background-color 0.4s ease;
+}
+
+body.dark-mode,
+body.dark-mode html,
+body.dark-mode app-root {
+  background-color: #121212;
+  color: #f5f5f5;
+}
+
 /* Smooth fade for background and text colors */
 body, body * {
   transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease;
@@ -9,8 +26,10 @@ body, body * {
 
 /* Dark mode background and text */
 body.dark-mode {
-  background-color: #121212;
-  color: #f5f5f5;
+  /* override the button vars */
+  --btn-bg:  #333;
+  --btn-text: #f0f0f0;
+  --btn-hover-bg: #444;
 }
 
 /* Overlay fade for smooth dimming effect */

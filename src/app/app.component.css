@@ -24,9 +24,12 @@
   --btn-hover-bg: #ddd;
 }
 
-/* Dark Mode */
-body.dark {
-  --btn-bg: #333;
-  --btn-text: #f0f0f0;
-  --btn-hover-bg: #444;
+.dark-mode-toggle {
+  background-color: var(--btn-bg);
+  color: var(--btn-text);
+  /* other styles... */
+}
+
+.dark-mode-toggle:hover {
+  background-color: var(--btn-hover-bg);
 }

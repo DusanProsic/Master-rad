@@ -1,4 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
+@import './styles/dark-mode.css';
+
+
 body, body * {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
