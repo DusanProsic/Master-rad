@@ -1,0 +1,32 @@
+.dark-mode-toggle {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background-color: var(--btn-bg);
+  color: var(--btn-text);
+  border: none;
+  border-radius: 50%;
+  padding: 0.6rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark-mode-toggle:hover {
+  background-color: var(--btn-hover-bg);
+}
+
+/* Default (Light Mode) */
+:root {
+  --btn-bg: #f0f0f0;
+  --btn-text: #222;
+  --btn-hover-bg: #ddd;
+}
+
+/* Dark Mode */
+body.dark {
+  --btn-bg: #333;
+  --btn-text: #f0f0f0;
+  --btn-hover-bg: #444;
+}

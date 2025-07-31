@@ -1,11 +1,18 @@
-<!-- Floating Dark Mode Toggle -->
-<div class="dark-mode-floating-toggle" (click)="toggleDarkMode()">
-  @if (themeService.isDarkMode()) {
-    <span>🌙</span>
-  } @else {
-    <span>☀️</span>
-  }
+<button class="dark-mode-toggle" (click)="toggleDarkMode()">
+  <span *ngIf="themeService.isDarkMode()">🌙</span>
+  <span *ngIf="!themeService.isDarkMode()">☀️</span>
+</button>
+
+<!-- Toast Notification (Single) -->
+<div
+  class="toast"
+  *ngIf="showToast"
+  [ngClass]="toastType"
+  (click)="showToast = false"
+>
+  {{ toastMessage }}
 </div>
+
 
 <!-- Render Pages Here -->
 <router-outlet></router-outlet>

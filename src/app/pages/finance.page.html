@@ -1,13 +1,5 @@
 <h2>Finance Tracker</h2>
 
-<!-- Dark Mode Toggle -->
-<div class="dark-mode-toggle">
-  <label class="switch">
-    <input type="checkbox" [checked]="themeService.isDarkMode()" (change)="toggleDarkMode()">
-    <span class="slider round"></span>
-  </label>
-  <span>{{ themeService.getCurrentTheme() }} Mode</span>
-</div>
 
 <!-- Finance Entry Form -->
 <form [formGroup]="financeForm" (ngSubmit)="onSubmit()" class="finance-form">
