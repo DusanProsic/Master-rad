@@ -20,7 +20,9 @@
     <!-- Summary Cards -->
     <div class="summary-cards">
       <div class="card income">
+        <div class="top-card">
         <p>Income</p>
+        </div> 
         <strong>{{ (totals$ | async)?.income | currency:'USD' }}</strong>
       </div>
       <div class="card expense">

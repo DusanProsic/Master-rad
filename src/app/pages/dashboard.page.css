@@ -19,18 +19,22 @@
 
 .sidebar h2 {
   margin-bottom: 2rem;
-  font-size: 1.5rem;
+  font-size: 2rem;
+  text-align: left;
+  margin-left: 1.2rem;
 }
 
 .sidebar nav button {
   background: none;
   border: none;
   color: inherit;
-  font-size: 1rem;
+  font-size: 1.2rem;
   text-align: left;
-  padding: 0.5rem 1rem;
+  padding: 0.7rem 1rem;
   border-radius: 6px;
   cursor: pointer;
+  flex: 1 1 0;
+  margin: 1rem 1rem;
 }
 
 .sidebar nav button.active {
@@ -83,6 +87,10 @@
   display: flex;
   flex-direction: column;
   border-top: 5px solid transparent;
+}
+
+.top-card {
+
 }
 
 .card p {
