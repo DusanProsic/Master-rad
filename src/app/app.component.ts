@@ -43,14 +43,11 @@ export class AppComponent {
   toggleDarkMode() {
     this.themeService.toggleDarkMode();
 
-    this.toastService.show(
-      this.themeService.isDarkMode()
-        ? 'Dark mode enabled'
-        : 'Light mode enabled',
-      'info'
-    );
+    
+   
   }
 
+ 
   // Keyboard shortcut: Ctrl + B for dark mode toggle
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {

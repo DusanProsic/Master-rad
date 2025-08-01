@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Observable, combineLatest, map } from 'rxjs';
@@ -13,6 +13,8 @@ import { Firestore, collection, collectionData } from '@angular/fire/firestore';
   styleUrls: ['./budget-goals.component.css']
 })
 export class BudgetGoalsComponent implements OnInit {
+  @Input() displayOnly = false;
+
   goals$: Observable<Goal[]>;
   entries$: Observable<any[]>;
   goalsWithProgress$!: Observable<any[]>;
@@ -30,16 +32,10 @@ export class BudgetGoalsComponent implements OnInit {
     this.goalsWithProgress$ = combineLatest([this.goals$, this.entries$]).pipe(
       map(([goals, entries]) => {
         return goals.map(goal => {
-          // Filter entries linked to this goal
           const goalEntries = entries.filter(e => e.goalId === goal.id);
-
-          // Calculate total amount spent or saved for this goal
           const totalForGoal = goalEntries.reduce((sum, e) => sum + e.amount, 0);
-
-          // Calculate percentage and remaining
           const percent = goal.target > 0 ? Math.min((totalForGoal / goal.target) * 100, 100) : 0;
           const remaining = Math.max(goal.target - totalForGoal, 0);
-
           return { ...goal, totalForGoal, percent, remaining };
         });
       })
@@ -54,6 +50,7 @@ export class BudgetGoalsComponent implements OnInit {
   }
 
   editGoal(goal: Goal) {
+    if (this.displayOnly) return;
     this.editingId = goal.id;
     this.newGoal = { name: goal.name, target: goal.target };
   }
@@ -66,10 +63,12 @@ export class BudgetGoalsComponent implements OnInit {
   }
 
   async deleteGoal(id: string) {
+    if (this.displayOnly) return;
     await this.goalService.deleteGoal(id);
   }
 
   cancelEdit() {
+    if (this.displayOnly) return;
     this.editingId = null;
     this.newGoal = { name: '', target: 0 };
   }

@@ -1,7 +1,51 @@
-<h2>Welcome to your Dashboard!</h2>
-<p>You are logged in successfully.</p>
+<div class="dashboard-container">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h2>MyFinance</h2>
+    <nav>
+      <button (click)="goTo('/dashboard')" class="active">Dashboard</button>
+      <button (click)="goTo('/finance')">Finance</button>
+      <button (click)="goTo('/goals')">Goals</button>
+      <button (click)="goTo('/calendar')">Calendar</button>
+    </nav>
+    <button class="logout" (click)="logout()">Logout</button>
+  </aside>
 
-<button (click)="logout()">Logout</button>
+  <!-- Main content -->
+  <main class="main-content">
+    <div class="top-bar">
+      <h2>Dashboard Overview</h2>
+    </div>
 
-<h2>Dashboard</h2>
-<app-budget-goals></app-budget-goals>
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+      <div class="card income">
+        <p>Income</p>
+        <strong>{{ (totals$ | async)?.income | currency:'USD' }}</strong>
+      </div>
+      <div class="card expense">
+        <p>Expenses</p>
+        <strong>{{ (totals$ | async)?.expense | currency:'USD' }}</strong>
+      </div>
+      <div class="card savings">
+        <p>Savings</p>
+        <strong>{{ (totals$ | async)?.savings | currency:'USD' }}</strong>
+      </div>
+    </div>
+
+    <!-- Goals Overview (from BudgetGoalsComponent) -->
+    <section class="goals-preview">
+      <h3>Goals</h3>
+      <app-budget-goals [displayOnly]="true"></app-budget-goals>
+
+    </section>
+
+   <div class="monthly-summary">
+  <p>Income this month: {{ monthlyTotals.income | currency:'USD' }}</p>
+  <p>Expenses this month: {{ monthlyTotals.expense | currency:'USD' }}</p>
+</div>
+
+  </main>
+</div>
+
+

@@ -1,0 +1,103 @@
+.goal-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.goal-form input {
+  padding: 0.4rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.9rem;
+}
+
+.goal-form button {
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.goal-form button:hover {
+  background-color: #388e3c;
+}
+
+/* Goal card */
+.goal-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+/* Progress bar */
+.progress-bar {
+  background-color: #e0e0e0;
+  height: 10px;
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.fill {
+  height: 100%;
+  background-color: #4caf50;
+  transition: width 0.3s ease;
+}
+
+.goal-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.goal-actions button {
+  margin-right: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  border: none;
+  background-color: #2196f3;
+  color: white;
+  cursor: pointer;
+}
+
+.goal-actions button:hover {
+  background-color: #1976d2;
+}
+
+/* Dark mode support */
+body.dark-mode .goal-card {
+  background-color: #1f1f1f;
+  color: #f0f0f0;
+  box-shadow: none;
+}
+
+body.dark-mode .progress-bar {
+  background-color: #333;
+}
+
+body.dark-mode .fill {
+  background-color: #66bb6a;
+}
+
+body.dark-mode .goal-form input {
+  background-color: #2b2b2b;
+  color: #f0f0f0;
+  border: 1px solid #555;
+}
+
+body.dark-mode .goal-form button,
+body.dark-mode .goal-actions button {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+body.dark-mode .goal-form button:hover,
+body.dark-mode .goal-actions button:hover {
+  background-color: #66bb6a;
+}

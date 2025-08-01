@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Firestore, collection, collectionData, addDoc, deleteDoc, doc, updateDoc } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
+import { combineLatest, map } from 'rxjs';
 
 /**
  * NewGoal – used when creating a new goal (no 'id' yet).
@@ -61,4 +62,21 @@ export class GoalService {
     const goalDoc = doc(this.firestore, `budgetGoals/${goalId}`);
     return deleteDoc(goalDoc);
   }
+
+  getGoalsWithProgress(entries$: Observable<any[]>): Observable<any[]> {
+  return combineLatest([this.getGoals(), entries$]).pipe(
+    map(([goals, entries]) => {
+      const incomeEntries = entries.filter(e => e.type === 'income');
+      return goals.map(goal => {
+        const goalIncome = incomeEntries
+          .filter(entry => entry.goalId === goal.id)
+          .reduce((sum, entry) => sum + entry.amount, 0);
+        const percent = Math.min((goalIncome / goal.target) * 100, 100);
+        return { ...goal, percent, contributed: goalIncome };
+      });
+    })
+  );
 }
+
+}
+

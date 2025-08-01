@@ -1,32 +1,25 @@
-<h3>Budget Goals</h3>
-
-<!-- Goal Creation/Editing Form -->
-<form (ngSubmit)="editingId ? updateGoal() : addGoal()">
-  <input type="text" [(ngModel)]="newGoal.name" name="name" placeholder="Goal name" required>
-  <input type="number" [(ngModel)]="newGoal.target" name="target" placeholder="Target amount" required>
-  <button type="submit">{{ editingId ? 'Update' : 'Add' }}</button>
-  <button type="button" *ngIf="editingId" (click)="cancelEdit()">Cancel</button>
-</form>
-
-<!-- No Goals Message -->
-<div *ngIf="(goalsWithProgress$ | async)?.length === 0">
-  <p>No goals yet. Add one above!</p>
+<!-- Add/Edit Form (only in full mode) -->
+<div *ngIf="!displayOnly" class="goal-form">
+  <input type="text" [(ngModel)]="newGoal.name" placeholder="Goal name" />
+  <input type="number" [(ngModel)]="newGoal.target" placeholder="Target amount" />
+  
+  <button *ngIf="!editingId" (click)="addGoal()">Add Goal</button>
+  <button *ngIf="editingId" (click)="updateGoal()">Update</button>
+  <button *ngIf="editingId" (click)="cancelEdit()">Cancel</button>
 </div>
 
-<!-- Goals with Progress -->
+<!-- List of Goals with Progress -->
 <div *ngFor="let goal of goalsWithProgress$ | async" class="goal-card">
-  <h3>{{ goal.name }}</h3>
-  <p>Target: {{ goal.target | currency:'RSD':'symbol':'1.0-0' }}</p>
-  <p>Current Savings: {{ goal.currentSavings | currency:'RSD':'symbol':'1.0-0' }}</p>
-  <p *ngIf="goal.remaining > 0">Remaining: {{ goal.remaining | currency:'RSD':'symbol':'1.0-0' }}</p>
-  <p *ngIf="goal.remaining <= 0">Goal Reached!</p>
-
-  <!-- Progress Bar -->
   <div class="progress-bar">
-    <div class="progress" [style.width.%]="goal.percent"></div>
+    <div class="fill" [style.width.%]="goal.percent"></div>
   </div>
-  <p>{{ goal.percent | number:'1.0-0' }}% complete</p>
+  <div class="goal-label">
+    {{ goal.name }} — {{ goal.percent | number:'1.0-0' }}% of {{ goal.target | currency:'USD' }}
+  </div>
 
-  <button (click)="editGoal(goal)">Edit</button>
-  <button (click)="deleteGoal(goal.id)">Delete</button>
+  <!-- Edit/Delete controls only in full mode -->
+  <div *ngIf="!displayOnly" class="goal-actions">
+    <button (click)="editGoal(goal)">Edit</button>
+    <button (click)="deleteGoal(goal.id)">Delete</button>
+  </div>
 </div>
