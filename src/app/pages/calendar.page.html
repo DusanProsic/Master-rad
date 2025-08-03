@@ -1,0 +1,33 @@
+<section class="calendar-page">
+  <h2>Monthly Calendar</h2>
+
+  <div class="calendar-grid">
+    <div
+      class="calendar-day"
+      *ngFor="let date of getDaysInMonth()"
+      [class.has-reminder]="reminders[format(date)]"
+      (click)="selectDate(date)"
+    >
+      <strong>{{ date.getDate() }}</strong>
+      <ul *ngIf="reminders[format(date)]">
+        <li *ngFor="let r of reminders[format(date)]">{{ r }}</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="reminder-form" *ngIf="selectedDate">
+    <h3>Add Reminder for {{ selectedDate }}</h3>
+    <input [(ngModel)]="newReminder" placeholder="Reminder text..." />
+    <button (click)="addReminder()">Add</button>
+  </div>
+
+  <div *ngIf="selectedDate && reminders[selectedDate]?.length">
+    <h4>Reminders:</h4>
+    <ul>
+      <li *ngFor="let r of reminders[selectedDate]; let i = index">
+        {{ r }}
+        <button (click)="deleteReminder(selectedDate, i)">X</button>
+      </li>
+    </ul>
+  </div>
+</section>

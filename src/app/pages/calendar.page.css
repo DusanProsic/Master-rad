@@ -1,0 +1,30 @@
+.calendar-page {
+  padding: 1rem;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.calendar-day {
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  min-height: 70px;
+  background-color: #fff;
+}
+
+.calendar-day.has-reminder {
+  background-color: #ffeaa7;
+}
+
+.reminder-form {
+  margin-bottom: 1rem;
+}
+
+input {
+  margin-right: 0.5rem;
+}
