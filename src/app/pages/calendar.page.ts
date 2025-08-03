@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { EmailService } from '../services/email.service';
 
 @Component({
   selector: 'app-calendar',
@@ -10,10 +11,15 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./calendar.page.css']
 })
 export class CalendarPage {
+  email = '';
+  reminderText = '';
+
   currentDate = new Date();
   reminders: { [date: string]: string[] } = {};
   newReminder = '';
   selectedDate: string | null = null;
+
+  constructor(private emailService: EmailService) {}
 
   getDaysInMonth(): Date[] {
     const year = this.currentDate.getFullYear();
@@ -50,4 +56,16 @@ export class CalendarPage {
   format(date: Date): string {
     return date.toISOString().split('T')[0];
   }
+
+  sendEmailReminder() {
+    if (!this.email || !this.reminderText) {
+      alert('Please fill in both the email and message.');
+      return;
+    }
+
+    this.emailService.sendReminder(this.email, this.reminderText)
+      .then(() => alert('Email sent successfully!'))
+      .catch((err) => alert('Email failed to send: ' + err.text));
+  }
 }
+

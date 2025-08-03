@@ -31,3 +31,15 @@
     </ul>
   </div>
 </section>
+
+<section class="email-reminder-form">
+  <h3>Send a Manual Email Reminder</h3>
+
+  <label>Email:</label>
+  <input [(ngModel)]="email" type="email" placeholder="Recipient's email" />
+
+  <label>Message:</label>
+  <input [(ngModel)]="reminderText" type="text" placeholder="Reminder message" />
+
+  <button (click)="sendEmailReminder()">Send Reminder Email</button>
+</section>
