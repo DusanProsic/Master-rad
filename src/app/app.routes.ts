@@ -7,6 +7,7 @@ import { authGuard } from './auth.guard';
 import { FinancePage } from './pages/finance.page';
 import { redirectIfAuthenticated } from './redirectIfAuthenticated.guard';
 import { NotFoundPage } from './pages/not-found/not-found.component';
+import { GoalsPage } from './pages/goals.page';
 
 export const routes: Routes = [
   // Public pages (no layout, no sidebar)
@@ -21,6 +22,7 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardPage, canActivate: [authGuard] },
       { path: 'finance', component: FinancePage, canActivate: [authGuard] },
+       {path: 'goals', component: GoalsPage, canActivate: [authGuard] },
       { path: '**', component: NotFoundPage },
     ]
   }
