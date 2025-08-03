@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { EmailService } from '../services/email.service';
+import { Auth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-calendar',
@@ -19,7 +20,7 @@ export class CalendarPage {
   newReminder = '';
   selectedDate: string | null = null;
 
-  constructor(private emailService: EmailService) {}
+  constructor(private emailService: EmailService, private auth: Auth) {}
 
   getDaysInMonth(): Date[] {
     const year = this.currentDate.getFullYear();
@@ -39,12 +40,24 @@ export class CalendarPage {
   }
 
   addReminder() {
-    if (!this.selectedDate || !this.newReminder.trim()) return;
-    const list = this.reminders[this.selectedDate] || [];
-    list.push(this.newReminder.trim());
-    this.reminders[this.selectedDate] = list;
-    this.newReminder = '';
+  if (!this.selectedDate || !this.newReminder.trim()) return;
+
+  const list = this.reminders[this.selectedDate] || [];
+  list.push(this.newReminder.trim());
+  this.reminders[this.selectedDate] = list;
+
+  const userEmail = this.auth.currentUser?.email;
+
+  if (userEmail) {
+    const message = `Reminder for ${this.selectedDate}: ${this.newReminder.trim()}`;
+    this.emailService.sendReminder(userEmail, message)
+      .then(() => console.log('Reminder email sent to user:', userEmail))
+      .catch((err) => console.error('Failed to send reminder email:', err.text));
   }
+
+  this.newReminder = '';
+}
+
 
   deleteReminder(date: string, index: number) {
     this.reminders[date].splice(index, 1);
