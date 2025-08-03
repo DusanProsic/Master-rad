@@ -1,6 +1,6 @@
 <div class="dashboard-container">
   <!-- Sidebar -->
-  <aside class="sidebar">
+ <!-- <aside class="sidebar">
     <h2>MyFinance</h2>
     <nav>
       <button (click)="goTo('/dashboard')" class="active">Dashboard</button>
@@ -9,8 +9,8 @@
       <button (click)="goTo('/calendar')">Calendar</button>
     </nav>
     <button class="logout" (click)="logout()">Logout</button>
-  </aside>
-
+  </aside> -->
+>
   <!-- Main content -->
   <main class="main-content">
     <div class="top-bar">
@@ -42,7 +42,7 @@
 
     </section>
 
-   <div class="monthly-summary">
+  <div class="monthly-summary" *ngIf="monthlyTotals">
   <p>Income this month: {{ monthlyTotals.income | currency:'USD' }}</p>
   <p>Expenses this month: {{ monthlyTotals.expense | currency:'USD' }}</p>
 </div>

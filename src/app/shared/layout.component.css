@@ -1,0 +1,70 @@
+.layout-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--main-bg, #f5f5f5);
+}
+
+.sidebar {
+  width: 240px;
+  background-color: #ffffff;
+  padding: 2rem 1.5rem;
+  border-right: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+}
+
+.sidebar h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #222;
+}
+
+.nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #444;
+  font-size: 1rem;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.nav-links a:hover {
+  background-color: #f0f0f0;
+}
+
+.nav-links a.active {
+  background-color: #e0e0e0;
+  font-weight: bold;
+}
+
+/* Dark mode */
+body.dark-mode .sidebar {
+  background-color: #1e1e1e;
+  border-color: #333;
+  box-shadow: 2px 0 8px rgba(255, 255, 255, 0.05);
+}
+
+body.dark-mode .sidebar h2 {
+  color: #f5f5f5;
+}
+
+body.dark-mode .nav-links a {
+  color: #ddd;
+}
+
+body.dark-mode .nav-links a:hover {
+  background-color: #2a2a2a;
+}
+
+body.dark-mode .nav-links a.active {
+  background-color: #333;
+}

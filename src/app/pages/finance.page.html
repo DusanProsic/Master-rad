@@ -1,4 +1,12 @@
-<h2>Finance Tracker</h2>
+<div class="layout-container">
+  
+ 
+  <!-- Main Content -->
+  <div class="main-content">
+    <header class="topbar">
+      <h1>Finance Tracker</h1>
+      <button class="dark-mode-toggle" (click)="toggleDarkMode()">🌓</button>
+    </header>
 
 
 <!-- Finance Entry Form -->
@@ -86,3 +94,5 @@
 <!-- Finance Chart -->
 <app-finance-chart [totals$]="totals$"></app-finance-chart>
 
+ </div>
+</div>
