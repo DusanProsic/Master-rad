@@ -1,6 +1,12 @@
 .calendar-page {
   padding: 1rem;
 }
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
 
 .calendar-grid {
   display: grid;

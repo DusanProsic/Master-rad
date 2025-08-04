@@ -1,6 +1,12 @@
 <section class="calendar-page">
   <h2>Monthly Calendar</h2>
 
+  <div class="calendar-header">
+  <button (click)="previousMonth()">◀</button>
+  <h2>{{ currentYear }} - {{ currentMonth + 1 }}</h2>
+  <button (click)="nextMonth()">▶</button>
+</div>
+
   <div class="calendar-grid">
     <div
       class="calendar-day"
@@ -16,10 +22,18 @@
   </div>
 
   <div class="reminder-form" *ngIf="selectedDate">
-    <h3>Add Reminder for {{ selectedDate }}</h3>
-    <input [(ngModel)]="newReminder" placeholder="Reminder text..." />
-    <button (click)="addReminder()">Add</button>
-  </div>
+  <h3>Add Reminder for {{ selectedDate }}</h3>
+
+  <input [(ngModel)]="newReminder" placeholder="Reminder text..." />
+  <input [(ngModel)]="reminderTime" type="time" />
+  
+  <label>
+    <input type="checkbox" [(ngModel)]="sendEmail" />
+    Send email reminder
+  </label>
+
+  <button (click)="addReminder()">Add Reminder</button>
+</div>
 
   <div *ngIf="selectedDate && reminders[selectedDate]?.length">
     <h4>Reminders:</h4>

@@ -12,8 +12,13 @@ import { Auth } from '@angular/fire/auth';
   styleUrls: ['./calendar.page.css']
 })
 export class CalendarPage {
+  currentMonth = new Date().getMonth();
+currentYear = new Date().getFullYear();
   email = '';
   reminderText = '';
+  reminderTime = '';
+sendEmail = false;
+  
 
   currentDate = new Date();
   reminders: { [date: string]: string[] } = {};
@@ -23,39 +28,62 @@ export class CalendarPage {
   constructor(private emailService: EmailService, private auth: Auth) {}
 
   getDaysInMonth(): Date[] {
-    const year = this.currentDate.getFullYear();
-    const month = this.currentDate.getMonth();
-    const days = [];
-    const date = new Date(year, month, 1);
-    while (date.getMonth() === month) {
-      days.push(new Date(date));
-      date.setDate(date.getDate() + 1);
-    }
-    return days;
+  const days = [];
+  const date = new Date(this.currentYear, this.currentMonth, 1);
+  while (date.getMonth() === this.currentMonth) {
+    days.push(new Date(date));
+    date.setDate(date.getDate() + 1);
   }
+  return days;
+}
+
+previousMonth() {
+  if (this.currentMonth === 0) {
+    this.currentMonth = 11;
+    this.currentYear--;
+  } else {
+    this.currentMonth--;
+  }
+}
+
+nextMonth() {
+  if (this.currentMonth === 11) {
+    this.currentMonth = 0;
+    this.currentYear++;
+  } else {
+    this.currentMonth++;
+  }
+}
 
   selectDate(date: Date) {
-    this.selectedDate = date.toISOString().split('T')[0];
-    this.newReminder = '';
-  }
+  this.selectedDate = date.toISOString().split('T')[0];
+  this.newReminder = '';
+  this.reminderTime = '';
+  this.sendEmail = false;
+}
 
   addReminder() {
   if (!this.selectedDate || !this.newReminder.trim()) return;
 
+  const reminderEntry = `${this.reminderTime ? this.reminderTime + ' - ' : ''}${this.newReminder.trim()}`;
+
   const list = this.reminders[this.selectedDate] || [];
-  list.push(this.newReminder.trim());
+  list.push(reminderEntry);
   this.reminders[this.selectedDate] = list;
 
-  const userEmail = this.auth.currentUser?.email;
+  if (this.sendEmail && this.auth.currentUser?.email) {
+    const email = this.auth.currentUser.email;
+    const message = `Reminder for ${this.selectedDate} at ${this.reminderTime || 'N/A'}:\n${this.newReminder.trim()}`;
 
-  if (userEmail) {
-    const message = `Reminder for ${this.selectedDate}: ${this.newReminder.trim()}`;
-    this.emailService.sendReminder(userEmail, message)
-      .then(() => console.log('Reminder email sent to user:', userEmail))
-      .catch((err) => console.error('Failed to send reminder email:', err.text));
+    this.emailService.sendReminder(email, message)
+      .then(() => console.log('Email reminder sent'))
+      .catch(err => console.error('Failed to send email reminder:', err.text));
   }
 
+  // Reset form
   this.newReminder = '';
+  this.reminderTime = '';
+  this.sendEmail = false;
 }
 
 
