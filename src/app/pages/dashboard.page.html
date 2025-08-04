@@ -50,4 +50,13 @@
   </main>
 </div>
 
+<section class="dashboard-reminders">
+  <h3>Upcoming Reminders</h3>
+  <ul>
+    <li *ngFor="let r of upcomingReminders$ | async">
+      {{ r.date }} {{ r.time }} — {{ r.message }}
+    </li>
+  </ul>
+</section>
+
 

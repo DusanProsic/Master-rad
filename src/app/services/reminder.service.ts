@@ -30,6 +30,7 @@ export class ReminderService {
     return addDoc(this.getUserRemindersCollection(), reminderDoc);
   }
 
+  
   async deleteReminder(reminderId: string) {
     const uid = this.auth.currentUser?.uid;
     if (!uid) throw new Error('User not authenticated');

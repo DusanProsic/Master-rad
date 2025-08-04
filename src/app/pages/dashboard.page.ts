@@ -7,6 +7,8 @@ import { Observable, map } from 'rxjs';
 import { GoalService, Goal } from '../components/goal-service.component';
 import { ThemeService } from '../services/theme.service';
 import { BudgetGoalsComponent } from '../components/budget-goals.component';
+import { ReminderService } from '../services/reminder.service';
+
 
 @Component({
   selector: 'app-dashboard',
@@ -26,8 +28,9 @@ export class DashboardPage implements OnInit {
   goalsWithProgress$: Observable<any[]>;
   totals$!: Observable<{ income: number, expense: number, savings: number }>;
   monthlyTotals!: { income: number, expense: number };
+  upcomingReminders$!: Observable<any[]>;
 
-  constructor() {
+  constructor(private reminderService: ReminderService) {
     const entriesRef = collection(this.firestore, 'entries');
     this.entries$ = collectionData(entriesRef, { idField: 'id' });
 
@@ -42,6 +45,17 @@ export class DashboardPage implements OnInit {
         return { income, expense, savings: income - expense };
       })
     );
+     this.upcomingReminders$ = this.reminderService.getReminders().pipe(
+    map((reminders: any[]) =>
+      reminders
+        .filter((r: any) => new Date(r.date + 'T' + (r.time || '00:00')) > new Date())
+        .sort((a: any, b: any) =>
+          new Date(a.date + 'T' + (a.time || '00:00')).getTime() -
+          new Date(b.date + 'T' + (b.time || '00:00')).getTime()
+        )
+        .slice(0, 5)
+    )
+  );
     this.entries$.pipe(
     map(entries => {
       const now = new Date();
