@@ -1,70 +1,68 @@
+/* Layout container remains the same */
 .layout-container {
   display: flex;
   min-height: 100vh;
-  background-color: var(--main-bg, #f5f5f5);
 }
-
+/* Sidebar layout with logout at bottom */
 .sidebar {
-  width: 240px;
-  background-color: #ffffff;
-  padding: 2rem 1.5rem;
-  border-right: 1px solid #ddd;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 250px;
+  background-color: #083344;
+  color: white;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+  justify-content: space-between;
+  padding: 2rem 1rem;
 }
 
-.sidebar h2 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #222;
+.main-content {
+  flex-grow: 1;
+  padding: 2rem;
+  background-color: #f9f9f9;
+  overflow-y: auto;
 }
 
+/* Navigation links */
 .nav-links {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  margin-top: 1rem;
 }
 
 .nav-links a {
+  color: #ffffff;
   text-decoration: none;
-  color: #444;
-  font-size: 1rem;
-  padding: 0.6rem 1rem;
+  padding: 0.5rem 1rem;
   border-radius: 8px;
+  font-weight: 500;
   transition: background-color 0.2s ease;
 }
 
-.nav-links a:hover {
-  background-color: #f0f0f0;
-}
-
+.nav-links a:hover,
 .nav-links a.active {
-  background-color: #e0e0e0;
-  font-weight: bold;
+  background-color: #0f4c5c;
 }
 
-/* Dark mode */
-body.dark-mode .sidebar {
-  background-color: #1e1e1e;
-  border-color: #333;
-  box-shadow: 2px 0 8px rgba(255, 255, 255, 0.05);
+/* Logout section at the bottom */
+.logout-section {
+  margin-top: auto; /* pushes it to the bottom */
+  padding-top: 2rem;
+  border-top: 1px solid #ccc;
 }
 
-body.dark-mode .sidebar h2 {
-  color: #f5f5f5;
+.logout-section button {
+  width: 100%;
+  padding: 0.5rem;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
 }
 
-body.dark-mode .nav-links a {
-  color: #ddd;
-}
-
-body.dark-mode .nav-links a:hover {
-  background-color: #2a2a2a;
-}
-
-body.dark-mode .nav-links a.active {
-  background-color: #333;
+.logout-section button:hover {
+  background-color: #c0392b;
 }

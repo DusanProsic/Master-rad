@@ -1,14 +1,89 @@
-/* You can add global styles to this file, and also import other style files */
-@import './styles/dark-mode.css';
-
-
-body, body * {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-}
-
-body, html {
+/* === Base Reset & Defaults === */
+* {
   margin: 0;
   padding: 0;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  box-sizing: border-box;
 }
 
+:root {
+  --card-bg: #ffffff;
+  --border-color: #ccc;
+  --input-bg: #f9f9f9;
+  --text-color: #333;
+  --accent-color: #1976d2;
+  --accent-color-hover: #145ca8;
+  --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f0f2f5;
+  color: #1e1e1e;
+  line-height: 1.6;
+}
+
+/* === Typography === */
+h1, h2, h3, h4, h5 {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+/* === Buttons === */
+button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #1976d2;
+  color: white;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+button:hover {
+  background-color: #155a9c;
+}
+
+/* === Inputs & Forms === */
+input, select, textarea {
+  width: 100%;
+  padding: 0.6rem;
+  margin-top: 0.4rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+/* === Utility Classes === */
+.text-center {
+  text-align: center;
+}
+
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
+
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+
+.card {
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 1rem;
+}
+
+/* === Scrollbar (optional) === */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #bbb;
+  border-radius: 4px;
+}

@@ -25,6 +25,11 @@ export class CalendarPage {
   currentDate = new Date();
   reminders: { [date: string]: { id: string, time?: string, message: string }[] } = {};
 
+  trackById(index: number, item: any): string {
+  return item.id || index.toString();
+}
+
+
   newReminder = '';
   selectedDate: string | null = null;
 
@@ -72,6 +77,10 @@ this.reminders[key].push({ id: r.id, time: r.time, message: r.message });
     }
   }
 
+  isSelected(date: Date): boolean {
+  return this.selectedDate === this.format(date);
+}
+
   nextMonth() {
     if (this.currentMonth === 11) {
       this.currentMonth = 0;
@@ -80,6 +89,14 @@ this.reminders[key].push({ id: r.id, time: r.time, message: r.message });
       this.currentMonth++;
     }
   }
+
+  getMonthName(monthIndex: number): string {
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+  return monthNames[monthIndex];
+}
 
   selectDate(date: Date) {
     this.selectedDate = date.toISOString().split('T')[0];
@@ -121,13 +138,22 @@ this.reminders[key].push({ id: r.id, time: r.time, message: r.message });
   
 
  async deleteReminderById(id: string, date: string) {
+  const confirmed = confirm('Are you sure you want to delete this reminder?');
+  if (!confirmed) return;
+
   try {
     await this.reminderService.deleteReminder(id);
 
-    // Remove from local display map
-    this.reminders[date] = this.reminders[date].filter(r => r.id !== id);
-    if (this.reminders[date].length === 0) {
-      delete this.reminders[date];
+    // Animate: Add a "fade-out" class before removing from list
+    const element = document.getElementById(`reminder-${id}`);
+    if (element) {
+      element.classList.add('fade-out');
+      setTimeout(() => {
+        this.reminders[date] = this.reminders[date].filter(r => r.id !== id);
+        if (this.reminders[date].length === 0) {
+          delete this.reminders[date];
+        }
+      }, 300); // wait for animation
     }
   } catch (err) {
     console.error('Failed to delete reminder:', err);
@@ -149,4 +175,6 @@ this.reminders[key].push({ id: r.id, time: r.time, message: r.message });
       .catch((err) => alert('Email failed to send: ' + err.text));
   }
 }
+
+
 
