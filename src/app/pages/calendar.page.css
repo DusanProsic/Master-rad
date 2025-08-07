@@ -204,20 +204,16 @@
   width: 150px;
 }
 
-.reminder-checkbox label {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1rem;
-}
+
 
 .checkbox-row {
-  display: flex;
+   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
   margin-top: 0.5rem;
+  font-size: 0.95rem;
 }
+
 
 .email-checkbox {
   display: flex;

@@ -18,8 +18,9 @@ export class BudgetGoalsComponent implements OnInit {
   goals$: Observable<Goal[]>;
   entries$: Observable<any[]>;
   goalsWithProgress$!: Observable<any[]>;
+  
 
-  newGoal: NewGoal = { name: '', target: 0 };
+  newGoal: NewGoal = { name: '', target: 0, currency: 'RSD' };
   editingId: string | null = null;
 
   constructor(private goalService: GoalService, private firestore: Firestore) {
@@ -45,21 +46,21 @@ export class BudgetGoalsComponent implements OnInit {
   async addGoal() {
     if (this.newGoal.name && this.newGoal.target > 0) {
       await this.goalService.addGoal(this.newGoal);
-      this.newGoal = { name: '', target: 0 };
+      this.newGoal = { name: '', target: 0, currency: 'RSD' };
     }
   }
 
   editGoal(goal: Goal) {
     if (this.displayOnly) return;
     this.editingId = goal.id;
-    this.newGoal = { name: goal.name, target: goal.target };
+    this.newGoal = { name: goal.name, target: goal.target, currency: goal.currency };
   }
 
   async updateGoal() {
     if (!this.editingId) return;
     await this.goalService.updateGoal(this.editingId, this.newGoal);
     this.editingId = null;
-    this.newGoal = { name: '', target: 0 };
+    this.newGoal = { name: '', target: 0, currency: 'RSD' };
   }
 
   async deleteGoal(id: string) {
@@ -70,6 +71,6 @@ export class BudgetGoalsComponent implements OnInit {
   cancelEdit() {
     if (this.displayOnly) return;
     this.editingId = null;
-    this.newGoal = { name: '', target: 0 };
+    this.newGoal = { name: '', target: 0, currency: 'RSD' };
   }
 }

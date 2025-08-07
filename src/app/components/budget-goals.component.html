@@ -1,25 +1,41 @@
-<!-- Add/Edit Form (only in full mode) -->
-<div *ngIf="!displayOnly" class="goal-form">
+<!-- Add/Edit Form (Full Mode Only) -->
+<div *ngIf="!displayOnly" class="goal-form card">
   <input type="text" [(ngModel)]="newGoal.name" placeholder="Goal name" />
   <input type="number" [(ngModel)]="newGoal.target" placeholder="Target amount" />
   
+  <select [(ngModel)]="newGoal.currency">
+    <option value="RSD">RSD</option>
+    <option value="EUR">€ EUR</option>
+    <option value="USD">$ USD</option>
+    <!-- Add more if needed -->
+  </select>
+
   <button *ngIf="!editingId" (click)="addGoal()">Add Goal</button>
   <button *ngIf="editingId" (click)="updateGoal()">Update</button>
   <button *ngIf="editingId" (click)="cancelEdit()">Cancel</button>
 </div>
 
-<!-- List of Goals with Progress -->
-<div *ngFor="let goal of goalsWithProgress$ | async" class="goal-card">
-  <div class="progress-bar">
-    <div class="fill" [style.width.%]="goal.percent"></div>
-  </div>
-  <div class="goal-label">
-    {{ goal.name }} — {{ goal.percent | number:'1.0-0' }}% of {{ goal.target | currency:'USD' }}
-  </div>
+<!-- Goals List -->
+<div class="goals-list">
+  <div *ngFor="let goal of goalsWithProgress$ | async" class="goal-card card">
+    <div class="goal-header">
+  <strong>{{ goal.name }}</strong>
+  <span>
+    {{ goal.saved | currency:goal.currency }} / {{ goal.target | currency:goal.currency }}
 
-  <!-- Edit/Delete controls only in full mode -->
-  <div *ngIf="!displayOnly" class="goal-actions">
-    <button (click)="editGoal(goal)">Edit</button>
-    <button (click)="deleteGoal(goal.id)">Delete</button>
+    ({{ goal.percent | number:'1.0-0' }}%)
+  </span>
+</div>
+
+
+    <div class="progress-bar">
+      <div class="fill" [style.width.%]="goal.percent"></div>
+    </div>
+
+    <!-- Edit/Delete Buttons (Full Mode Only) -->
+    <div *ngIf="!displayOnly" class="goal-actions">
+      <button (click)="editGoal(goal)">Edit</button>
+      <button (click)="deleteGoal(goal.id)">Delete</button>
+    </div>
   </div>
 </div>

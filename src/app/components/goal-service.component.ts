@@ -9,6 +9,7 @@ import { combineLatest, map } from 'rxjs';
 export interface NewGoal {
   name: string;
   target: number;
+  currency: string;
 }
 
 /**
