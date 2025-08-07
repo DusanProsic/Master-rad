@@ -1,199 +1,13 @@
-/* ========== Layout & Containers ========== */
-.finance-form,
-.filters,
-.summary-bar,
-.entries-list li,
-.selected-goal {
-  background-color: #fff;
-  color: #333;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  border: 1px solid #ddd;
-  transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-body.dark-mode .finance-form,
-body.dark-mode .filters,
-body.dark-mode .summary-bar,
-body.dark-mode .entries-list li,
-body.dark-mode .selected-goal {
-  background-color: #1e1e1e;
-  color: #f0f0f0;
-  border-color: #333;
-}
-
-/* ========== Form Elements ========== */
-form label {
-  display: block;
-  margin: 1rem 0 0.3rem;
-  font-weight: 500;
-}
-
-form input,
-form select {
-  width: 100%;
-  padding: 0.6rem;
-  margin-top: 0.3rem;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  background-color: #f9f9f9;
-  transition: border-color 0.3s, background-color 0.3s;
-}
-
-body.dark-mode form input,
-body.dark-mode form select {
-  background-color: #2b2b2b;
-  color: #f5f5f5;
-  border: 1px solid #444;
-}
-
-form button {
-  margin-top: 1rem;
-  padding: 0.6rem 1.2rem;
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-form button:hover {
-  background-color: #45a049;
-}
-
-/* ========== Filters ========== */
-.filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
-  align-items: center;
-}
-
-/* ========== Progress Bars ========== */
-.progress-bar,
-.entry-progress-bar {
-  background-color: #ddd;
-  border-radius: 4px;
-  height: 12px;
-  margin-top: 0.5rem;
-  overflow: hidden;
-}
-
-.progress {
-  background-color: #4caf50;
-  height: 100%;
-  transition: width 0.3s ease;
-}
-
-body.dark-mode .progress-bar,
-body.dark-mode .entry-progress-bar {
-  background-color: #333;
-}
-
-body.dark-mode .progress {
-  background-color: #66bb6a;
-}
-
-/* ========== Summary Bar ========== */
-.summary-bar p {
-  margin: 0.4rem 0;
-  font-weight: 500;
-}
-
-/* ========== Entry List ========== */
-.entries-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.entries-list li {
-  margin-bottom: 1rem;
-  padding: 0.75rem;
-}
-
-/* ========== Selected Goal Preview ========== */
-.selected-goal p {
-  margin: 0.4rem 0;
-}
-
-/* ========== Chart ========== */
-app-finance-chart {
-  display: block;
-  margin-top: 1rem;
-}
-
-/* ========== Responsive Layout ========== */
-@media (max-width: 768px) {
-  .filters {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .finance-form input,
-  .finance-form select,
-  .finance-form button,
-  .filters select,
-  .filters input {
-    font-size: 1rem;
-  }
-
-  .summary-bar {
-    text-align: center;
-  }
-
-  .entries-list li {
-    padding: 0.8rem;
-  }
-}
-
-/* ========== Layout with Sidebar ========== */
 .layout-container {
   display: flex;
   min-height: 100vh;
 }
 
-.sidebar {
-  width: 220px;
-  background-color: #fafafa;
-  padding: 1.5rem;
-  border-right: 1px solid #ddd;
-}
-
-.sidebar h2 {
-  margin-top: 0;
-  font-size: 1.4rem;
-}
-
-.sidebar a {
-  display: block;
-  margin: 1rem 0;
-  text-decoration: none;
-  color: #333;
-  font-weight: 500;
-}
-
-.sidebar a:hover {
-  text-decoration: underline;
-}
-
-body.dark-mode .sidebar {
-  background-color: #1e1e1e;
-  border-color: #333;
-}
-
-body.dark-mode .sidebar a {
-  color: #f0f0f0;
-}
-
 .main-content {
-  flex-grow: 1;
+  flex: 1;
   padding: 2rem;
-  background-color: inherit;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .topbar {
@@ -203,29 +17,156 @@ body.dark-mode .sidebar a {
   margin-bottom: 2rem;
 }
 
-.dark-mode-toggle {
-  background: transparent;
-  border: none;
-  font-size: 1.6rem;
-  cursor: pointer;
-  color: inherit;
+.finance-form {
+  background: var(--card-bg);
+  padding: 1rem;
+  border-radius: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--border-color);
 }
 
-/* Responsive Sidebar Collapse */
-@media (max-width: 768px) {
-  .layout-container {
-    flex-direction: column;
-  }
+.finance-form input,
+.finance-form select,
+.finance-form button {
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  font-size: 0.95rem;
+}
 
-  .sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid #ccc;
-    display: flex;
-    justify-content: space-around;
-  }
+.button-group {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.button-group button {
+  flex: 1;
+}
 
-  .main-content {
-    padding: 1rem;
-  }
+
+.selected-goal {
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  background: var(--card-bg);
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.filters label {
+  font-weight: 500;
+  margin-right: 0.3rem;
+}
+
+.filters select,
+.filters input[type="date"] {
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  font-size: 0.9rem;
+}
+
+
+.entries-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 1rem;
+}
+
+.entries-list li {
+  padding: 1rem;
+  margin-bottom: 0.8rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background-color: var(--card-bg);
+}
+
+.entry-progress-bar {
+  height: 8px;
+  background-color: #ccc;
+  border-radius: 5px;
+  margin-top: 5px;
+  overflow: hidden;
+}
+
+.entry-progress-bar .progress {
+  height: 100%;
+  background-color: var(--accent);
+  transition: width 0.3s ease;
+}
+
+
+.summary-bar {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.summary-bar p {
+  margin: 0.5rem;
+}
+
+.goal-card {
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 10px;
+  background-color: var(--card-bg);
+  border: 2px solid var(--accent); /* Accent border for goal-linked */
+  box-shadow: var(--shadow);
+}
+
+.entry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.goal-tag {
+  background-color: var(--accent);
+  color: white;
+  font-size: 0.8rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: 5px;
+}
+
+.entry-goal-info {
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.entry-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.entry-progress-bar {
+  height: 8px;
+  background-color: #ccc;
+  border-radius: 5px;
+  margin-top: 0.3rem;
+  overflow: hidden;
+}
+
+.entry-progress-bar .progress {
+  height: 100%;
+  background-color: var(--accent);
+  transition: width 0.3s ease;
 }

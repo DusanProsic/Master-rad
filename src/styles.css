@@ -7,12 +7,19 @@
 
 :root {
   --card-bg: #ffffff;
+    --card-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   --border-color: #ccc;
   --input-bg: #f9f9f9;
   --text-color: #333;
   --accent-color: #1976d2;
   --accent-color-hover: #145ca8;
   --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+   --btn-bg: #1976d2;
+  --btn-text: #fff;
+  --progress-bg: #e0e0e0;
+  --progress-fill: #4caf50;
+  --highlight-bg: #f5f5f5;
+  --accent: #4caf50;
 }
 
 body {

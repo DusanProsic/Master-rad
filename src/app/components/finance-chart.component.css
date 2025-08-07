@@ -1,4 +1,19 @@
-canvas {
-  height: 300px !important;
-  width: 300px !important;
+app-finance-chart {
+  display: block;
+  max-width: 500px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: var(--card-bg); /* Reuse your card background */
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
 }
+
+canvas {
+   border-radius: 10px;
+  max-width: 100%;
+
+  background-color: transparent; /* Make sure it doesn't clash with container */
+  margin-top: 2rem ;
+}
+

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
@@ -17,6 +17,7 @@ import { ThemeService } from '../services/theme.service';
   imports: [CommonModule, ReactiveFormsModule, FormsModule, FinanceChartComponent],
 })
 export class FinancePage implements OnInit {
+  @ViewChild('financeFormRef') financeFormRef!: ElementRef;
   entries$: Observable<any[]>;
   goals$: Observable<Goal[]>;
   latestGoals: Goal[] = [];
@@ -63,6 +64,12 @@ export class FinancePage implements OnInit {
       this.selectedGoalName = this.getGoalName(goalId);
       this.updateGoalProgressPreview();
     });
+
+    this.financeForm.get('type')?.valueChanges.subscribe(type => {
+  if (type !== 'income') {
+    this.financeForm.patchValue({ goalId: '' });
+  }
+});
 
     this.financeForm.valueChanges.subscribe(() => this.updateGoalProgressPreview());
 
@@ -134,16 +141,22 @@ export class FinancePage implements OnInit {
     this.filterType$.next(select.value);
   }
 
-  editEntry(entry: any) {
-    this.editingId = entry.id;
-    this.financeForm.setValue({
-      description: entry.description,
-      amount: entry.amount,
-      type: entry.type,
-      goalId: entry.goalId || ''
-    });
-    this.updateGoalProgressPreview();
-  }
+ editEntry(entry: any) {
+  this.editingId = entry.id;
+  this.financeForm.setValue({
+    description: entry.description,
+    amount: entry.amount,
+    type: entry.type,
+    goalId: entry.goalId || ''
+  });
+  this.updateGoalProgressPreview();
+
+  // Scroll to the form
+  setTimeout(() => {
+    this.financeFormRef?.nativeElement.scrollIntoView({ behavior: 'smooth' });
+  }, 100);
+}
+
 
   cancelEdit() {
     this.editingId = null;
@@ -187,12 +200,14 @@ export class FinancePage implements OnInit {
     return goal ? goal.name : '';
   }
 
-  getEntryGoalProgress(entry: any): number {
-    if (!entry.goalId) return 0;
-    const goal = this.latestGoals.find(g => g.id === entry.goalId);
-    if (!goal || goal.target === 0) return 0;
-    return Math.min((entry.amount / goal.target) * 100, 100);
-  }
+ getEntryGoalProgress(entry: any): number {
+  if (!entry || !entry.goalId || !entry.amount) return 0;
+
+  const goal = this.latestGoals.find(g => g.id === entry.goalId);
+  if (!goal || !goal.target) return 0;
+
+  return Math.min((entry.amount / goal.target) * 100, 100);
+}
 
   getGoalOverallProgress(goalId: string): number {
     return this.goalProgressMap[goalId] || 0;
