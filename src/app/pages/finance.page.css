@@ -1,172 +1,94 @@
-.layout-container {
-  display: flex;
-  min-height: 100vh;
+/* Layout is handled by global .app / .topbar / .main */
+/* Keep this file focused on structure tweaks for Finance only */
+
+.w-full { width: 100%; }
+.stack { display: grid; gap: var(--gap); }
+
+.layout-container, .main-content { /* legacy classes—safe to leave or remove */
+  all: unset;
 }
 
-.main-content {
-  flex: 1;
-  padding: 2rem;
-  max-width: 900px;
-  margin: 0 auto;
-}
-
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
+/* Form */
 .finance-form {
-  background: var(--card-bg);
-  padding: 1rem;
-  border-radius: 10px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.8rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid var(--border-color);
+  display: grid;
+  gap: var(--gap);
+  border: 1px solid var(--c-border);
 }
 
-.finance-form input,
-.finance-form select,
-.finance-form button {
-  padding: 0.5rem;
-  border-radius: 6px;
-  border: 1px solid var(--border-color);
-  font-size: 0.95rem;
-}
+.label { font-weight: 600; color: var(--c-text); opacity: .9; }
 
 .button-group {
   display: flex;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-.button-group button {
-  flex: 1;
+  gap: var(--gap);
+  flex-wrap: wrap;
 }
 
-
-.selected-goal {
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
-}
-
+/* Filters */
 .filters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  align-items: center;
-  background: var(--card-bg);
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
+  border: 1px solid var(--c-border);
 }
 
-.filters label {
-  font-weight: 500;
-  margin-right: 0.3rem;
-}
+/* Entries */
+/* Center content and spacing are handled globally; keep Finance-specific tweaks only */
 
-.filters select,
-.filters input[type="date"] {
-  padding: 0.3rem 0.5rem;
-  border-radius: 6px;
-  border: 1px solid var(--border-color);
-  font-size: 0.9rem;
-}
+/* Entries list items should look like cards even without goals */
+.entries-list { list-style: none; padding: 0; margin: var(--gap) 0; display: grid; gap: var(--gap); }
+.entries-list li { background: var(--c-panel); border-radius: var(--radius); border: 1px solid var(--c-border); padding: var(--gap-lg); }
+.entries-list li.goal-card { border: 2px solid var(--accent); }
 
+/* Entry header + actions spacing */
+.entry-header { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); }
+.entry-actions { display: flex; gap: var(--gap); margin-top: .5rem; }
 
-.entries-list {
-  list-style: none;
-  padding: 0;
-  margin-top: 1rem;
-}
+/* Summary bar matches cards */
+.summary-bar { border: 1px solid var(--c-border); }
 
-.entries-list li {
-  padding: 1rem;
-  margin-bottom: 0.8rem;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background-color: var(--card-bg);
-}
+/* Chart: ensure it gets height and never clips */
+app-finance-chart { display: block; width: 100%; }
+app-finance-chart .chart-container { position: relative; width: 100%; aspect-ratio: 16/9; }
+app-finance-chart canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
-.entry-progress-bar {
-  height: 8px;
-  background-color: #ccc;
-  border-radius: 5px;
-  margin-top: 5px;
-  overflow: hidden;
-}
-
-.entry-progress-bar .progress {
-  height: 100%;
-  background-color: var(--accent);
-  transition: width 0.3s ease;
-}
-
-
-.summary-bar {
-  margin-top: 2rem;
-  padding: 1rem;
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-}
-
-.summary-bar p {
-  margin: 0.5rem;
-}
 
 .goal-card {
-  padding: 1rem;
-  margin: 1rem 0;
-  border-radius: 10px;
-  background-color: var(--card-bg);
-  border: 2px solid var(--accent); /* Accent border for goal-linked */
+  border: 2px solid var(--accent);
   box-shadow: var(--shadow);
 }
 
-.entry-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
 
 .goal-tag {
-  background-color: var(--accent);
-  color: white;
+  background: var(--accent);
+  color: #fff;
   font-size: 0.8rem;
   padding: 0.2rem 0.6rem;
-  border-radius: 5px;
+  border-radius: 999px;
 }
 
-.entry-goal-info {
-  font-size: 0.9rem;
-  margin-top: 0.5rem;
+/* Goal info */
+.goal-info {
+  padding: var(--gap);
+  border-radius: var(--radius);
 }
 
-.entry-actions {
-  display: flex;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-}
-
-.entry-progress-bar {
+/* Progress bars */
+.progress-bar {
   height: 8px;
-  background-color: #ccc;
-  border-radius: 5px;
-  margin-top: 0.3rem;
+  background: var(--c-border);
+  border-radius: 6px;
+  margin-top: .4rem;
   overflow: hidden;
 }
-
-.entry-progress-bar .progress {
+.progress-bar .progress {
   height: 100%;
-  background-color: var(--accent);
-  transition: width 0.3s ease;
+  background: var(--accent);
+  transition: width .3s ease;
 }
+
+/* Totals */
+
+
+/* Inputs adopt global .input/.select/.btn — just ensure full width on small screens */
+.input, .select {
+  width: 100%;
+}
+
+

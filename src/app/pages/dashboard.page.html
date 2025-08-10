@@ -1,61 +1,71 @@
-<div class="dashboard-container">
-  <!-- Sidebar -->
- <!-- <aside class="sidebar">
-    <h2>MyFinance</h2>
-    <nav>
-      <button (click)="goTo('/dashboard')" class="active">Dashboard</button>
-      <button (click)="goTo('/finance')">Finance</button>
-      <button (click)="goTo('/goals')">Goals</button>
-      <button (click)="goTo('/calendar')">Calendar</button>
-    </nav>
-    <button class="logout" (click)="logout()">Logout</button>
-  </aside> -->
-  <!-- Main content -->
-  <main class="main-content">
-    <div class="top-bar">
-      <h2>Dashboard Overview</h2>
-    </div>
+<div class="app">
+  <!-- Global sidebar lives outside; this page just renders topbar + main -->
+  <header class="topbar">
+    <h2>Dashboard Overview</h2>
+    <!-- Put your theme toggle here if you want -->
+  </header>
 
-    <!-- Summary Cards -->
-    <div class="summary-cards">
-      <div class="card income">
-        <div class="top-card">
-        <p>Income</p>
-        </div> 
-        <strong>{{ (totals$ | async)?.income | currency:'USD' }}</strong>
-      </div>
-      <div class="card expense">
-        <p>Expenses</p>
-        <strong>{{ (totals$ | async)?.expense | currency:'USD' }}</strong>
-      </div>
-      <div class="card savings">
-        <p>Savings</p>
-        <strong>{{ (totals$ | async)?.savings | currency:'USD' }}</strong>
-      </div>
-    </div>
+  <main class="main">
+    <!-- Summary cards -->
+    <section class="grid cards-3">
+      <article class="card stat-card">
+        <p class="stat-title">Income</p>
+        <div class="stat-value">
+          {{ (totals$ | async)?.income | currency:'USD':'symbol':'1.0-0' }}
+        </div>
+      </article>
 
-    <!-- Goals Overview (from BudgetGoalsComponent) -->
-    <section class="goals-preview">
-      <h3>Goals</h3>
-      <app-budget-goals [displayOnly]="true"></app-budget-goals>
+      <article class="card stat-card">
+        <p class="stat-title">Expenses</p>
+        <div class="stat-value">
+          {{ (totals$ | async)?.expense | currency:'USD':'symbol':'1.0-0' }}
+        </div>
+      </article>
 
+      <article class="card stat-card">
+        <p class="stat-title">Savings</p>
+        <div class="stat-value">
+          {{ (totals$ | async)?.savings | currency:'USD':'symbol':'1.0-0' }}
+        </div>
+      </article>
     </section>
 
-  <div class="monthly-summary" *ngIf="monthlyTotals">
-  <p>Income this month: {{ monthlyTotals.income | currency:'USD' }}</p>
-  <p>Expenses this month: {{ monthlyTotals.expense | currency:'USD' }}</p>
-</div>
+    <!-- Chart + Monthly summary -->
+    <section class="grid grid-2">
+      <article class="card chart-card">
+        <app-finance-chart [totals$]="totals$"></app-finance-chart>
+      </article>
 
+      <article class="card monthly-card" *ngIf="monthlyTotals">
+        <h3 class="section-title">This Month</h3>
+        <div class="monthly-rows">
+          <div><strong>Income:</strong> {{ monthlyTotals.income | currency:'USD':'symbol':'1.0-0' }}</div>
+          <div><strong>Expenses:</strong> {{ monthlyTotals.expense | currency:'USD':'symbol':'1.0-0' }}</div>
+          <div><strong>Savings:</strong> {{ (monthlyTotals.income - monthlyTotals.expense) | currency:'USD':'symbol':'1.0-0' }}</div>
+        </div>
+      </article>
+    </section>
+
+    <!-- Goals preview -->
+    <section class="card goals-preview">
+      <div class="section-header">
+        <h3 class="section-title">Goals</h3>
+        <a class="btn btn-ghost" (click)="goTo('/goals')">Open Goals</a>
+      </div>
+      <app-budget-goals [displayOnly]="true"></app-budget-goals>
+    </section>
+
+    <!-- Upcoming reminders -->
+    <section class="card dashboard-reminders">
+      <div class="section-header">
+        <h3 class="section-title">Upcoming Reminders</h3>
+        <a class="btn btn-ghost" (click)="goTo('/calendar')">Open Calendar</a>
+      </div>
+      <ul class="reminder-list">
+        <li *ngFor="let r of upcomingReminders$ | async; trackBy: trackByReminder">
+          <span>{{ r.date }} {{ r.time }} — {{ r.message }}</span>
+        </li>
+      </ul>
+    </section>
   </main>
 </div>
-
-<section class="dashboard-reminders">
-  <h3>Upcoming Reminders</h3>
-  <ul>
-    <li *ngFor="let r of upcomingReminders$ | async">
-      {{ r.date }} {{ r.time }} — {{ r.message }}
-    </li>
-  </ul>
-</section>
-
-

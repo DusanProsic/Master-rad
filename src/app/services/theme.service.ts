@@ -1,48 +1,43 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
+import { DOCUMENT } from '@angular/common';
 
-@Injectable({
-  providedIn: 'root'
-})
+export type ThemeMode = 'light' | 'dark';
+
+@Injectable({ providedIn: 'root' })
 export class ThemeService {
-  private darkModeClass = 'dark-mode';
+  private key = 'app-theme';
+  private subject = new BehaviorSubject<ThemeMode>(this.readInitial());
+  theme$ = this.subject.asObservable();
 
-  constructor() {
-    this.applyInitialTheme();
+  constructor(@Inject(DOCUMENT) private doc: Document) {
+    this.apply(this.subject.value);
   }
 
-  private applyInitialTheme() {
-    const savedTheme = localStorage.getItem('darkMode');
-
-    if (savedTheme !== null) {
-      // Use saved user preference
-      this.setDarkMode(savedTheme === 'true');
-    } else {
-      // Auto-detect from system
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      this.setDarkMode(prefersDark);
-    }
-  }
-
+  /** Use this everywhere */
   toggleDarkMode() {
-    document.body.classList.toggle(this.darkModeClass);
-    const isDark = this.isDarkMode();
-    localStorage.setItem('darkMode', isDark ? 'true' : 'false');
+    const next: ThemeMode = this.subject.value === 'dark' ? 'light' : 'dark';
+    this.setTheme(next);
+  }
+
+  setTheme(mode: ThemeMode) {
+    localStorage.setItem(this.key, mode);
+    this.subject.next(mode);
+    this.apply(mode);
   }
 
   isDarkMode(): boolean {
-    return document.body.classList.contains(this.darkModeClass);
+    return this.subject.value === 'dark';
   }
 
-  getCurrentTheme(): string {
-    return this.isDarkMode() ? 'Dark' : 'Light';
+  private apply(mode: ThemeMode) {
+    this.doc.documentElement.setAttribute('data-theme', mode === 'dark' ? 'dark' : 'light');
   }
 
-  setDarkMode(enabled: boolean) {
-    if (enabled) {
-      document.body.classList.add(this.darkModeClass);
-    } else {
-      document.body.classList.remove(this.darkModeClass);
-    }
-    localStorage.setItem('darkMode', enabled ? 'true' : 'false');
+  private readInitial(): ThemeMode {
+    const saved = localStorage.getItem(this.key) as ThemeMode | null;
+    if (saved) return saved;
+    const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+    return prefersDark ? 'dark' : 'light';
   }
 }

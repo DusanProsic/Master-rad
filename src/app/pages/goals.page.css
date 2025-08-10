@@ -1,8 +1,22 @@
 .goals-page {
+  flex: 1;
   padding: 1.5rem;
+  max-width: 900px;
+  margin: 0 auto;    
+
 }
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
 
 .goals-page h2 {
   font-size: 1.8rem;
   margin-bottom: 1rem;
 }
+
+

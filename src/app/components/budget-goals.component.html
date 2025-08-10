@@ -1,41 +1,47 @@
-<!-- Add/Edit Form (Full Mode Only) -->
-<div *ngIf="!displayOnly" class="goal-form card">
-  <input type="text" [(ngModel)]="newGoal.name" placeholder="Goal name" />
-  <input type="number" [(ngModel)]="newGoal.target" placeholder="Target amount" />
-  
-  <select [(ngModel)]="newGoal.currency">
-    <option value="RSD">RSD</option>
-    <option value="EUR">€ EUR</option>
-    <option value="USD">$ USD</option>
-    <!-- Add more if needed -->
-  </select>
-
-  <button *ngIf="!editingId" (click)="addGoal()">Add Goal</button>
-  <button *ngIf="editingId" (click)="updateGoal()">Update</button>
-  <button *ngIf="editingId" (click)="cancelEdit()">Cancel</button>
-</div>
-
-<!-- Goals List -->
-<div class="goals-list">
-  <div *ngFor="let goal of goalsWithProgress$ | async" class="goal-card card">
-    <div class="goal-header">
-  <strong>{{ goal.name }}</strong>
-  <span>
-    {{ goal.saved | currency:goal.currency }} / {{ goal.target | currency:goal.currency }}
-
-    ({{ goal.percent | number:'1.0-0' }}%)
-  </span>
-</div>
-
-
-    <div class="progress-bar">
-      <div class="fill" [style.width.%]="goal.percent"></div>
+<div class="page">
+  <!-- Add/Edit Form (Full Mode Only) -->
+  <section *ngIf="!displayOnly" class="card goal-form">
+    <div class="grid grid-3">
+      <input class="input" type="text" [(ngModel)]="newGoal.name" placeholder="Goal name" />
+      <input class="input" type="number" [(ngModel)]="newGoal.target" placeholder="Target amount" min="0" />
+      <select class="select" [(ngModel)]="newGoal.currency">
+        <option value="RSD">RSD</option>
+        <option value="EUR">€ EUR</option>
+        <option value="USD">$ USD</option>
+      </select>
     </div>
 
-    <!-- Edit/Delete Buttons (Full Mode Only) -->
-    <div *ngIf="!displayOnly" class="goal-actions">
-      <button (click)="editGoal(goal)">Edit</button>
-      <button (click)="deleteGoal(goal.id)">Delete</button>
+    <div class="button-row">
+      <button *ngIf="!editingId" class="btn" (click)="addGoal()">Add Goal</button>
+      <button *ngIf="editingId" class="btn" (click)="updateGoal()">Update</button>
+      <button *ngIf="editingId" class="btn btn-ghost" (click)="cancelEdit()">Cancel</button>
     </div>
-  </div>
+  </section>
+
+  <!-- Goals List -->
+  <section class="grid grid-3 goals-list">
+    <article *ngFor="let goal of goalsWithProgress$ | async; trackBy: trackById"
+             class="card goal-card"
+             [class.goal-complete]="goal.percent >= 100">
+      <div class="goal-header">
+        <strong class="goal-name">{{ goal.name }}</strong>
+        <span class="goal-amounts">
+          {{ goal.saved | currency:goal.currency:'symbol':'1.0-0' }}
+          /
+          {{ goal.target | currency:goal.currency:'symbol':'1.0-0' }}
+          ({{ goal.percent | number:'1.0-0' }}%)
+        </span>
+      </div>
+
+      <div class="progress-bar">
+        <div class="fill" [style.width.%]="goal.percent"></div>
+      </div>
+
+      <!-- Edit/Delete Buttons (Full Mode Only) -->
+      <div *ngIf="!displayOnly" class="goal-actions">
+        <button class="btn" (click)="editGoal(goal)">Edit</button>
+        <button class="btn btn-ghost" (click)="deleteGoal(goal.id)">Delete</button>
+      </div>
+    </article>
+  </section>
 </div>

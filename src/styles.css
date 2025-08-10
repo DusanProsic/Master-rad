@@ -5,22 +5,6 @@
   box-sizing: border-box;
 }
 
-:root {
-  --card-bg: #ffffff;
-    --card-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  --border-color: #ccc;
-  --input-bg: #f9f9f9;
-  --text-color: #333;
-  --accent-color: #1976d2;
-  --accent-color-hover: #145ca8;
-  --box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-   --btn-bg: #1976d2;
-  --btn-text: #fff;
-  --progress-bg: #e0e0e0;
-  --progress-fill: #4caf50;
-  --highlight-bg: #f5f5f5;
-  --accent: #4caf50;
-}
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -79,12 +63,6 @@ input, select, textarea {
 .mb-2 { margin-bottom: 0.5rem; }
 .mb-3 { margin-bottom: 1rem; }
 
-.card {
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-  padding: 1rem;
-}
 
 /* === Scrollbar (optional) === */
 ::-webkit-scrollbar {
@@ -94,3 +72,130 @@ input, select, textarea {
   background: #bbb;
   border-radius: 4px;
 }
+
+:root {
+  /* colors */
+  --bg: #0f1115;
+  --panel: #151922;
+  --panel-2: #1b2030;
+  --text: #e6e8ee;
+  --muted: #a8b0c2;
+  --primary: #5b8cff;
+  --primary-600: #4a76e6;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+
+  /* surfaces (light) */
+  --bg-light: #f6f7fb;
+  --panel-light: #ffffff;
+  --panel-2-light: #f1f3f8;
+  --text-light: #0c0f14;
+  --muted-light: #5b6372;
+
+  /* layout */
+  --radius: 14px;
+  --radius-sm: 10px;
+  --shadow: 0 8px 24px rgba(0,0,0,.18);
+  --gap: 16px;
+  --gap-lg: 24px;
+}
+
+:root { --accent: var(--primary); }
+:root { --c-border: rgba(10,20,30,.12); }
+:root[data-theme="dark"] { --c-border: rgba(255,255,255,.10); }
+
+
+/* Light theme as default via variables */
+:root {
+  --c-bg: var(--bg-light);
+  --c-panel: var(--panel-light);
+  --c-panel-2: var(--panel-2-light);
+  --c-text: var(--text-light);
+  --c-muted: var(--muted-light);
+}
+
+/* Dark theme override */
+:root[data-theme="dark"] {
+  --c-bg: var(--bg);
+  --c-panel: var(--panel);
+  --c-panel-2: var(--panel-2);
+  --c-text: var(--text);
+  --c-muted: var(--muted);
+}
+
+/* Base element resets using tokens */
+html, body {
+  background: var(--c-bg);
+  color: var(--c-text);
+}
+
+.card {
+  background: var(--c-panel);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--gap-lg);
+}
+
+.card-subtle { background: var(--c-panel-2); }
+
+.btn {
+  display:inline-flex; align-items:center; justify-content:center;
+  padding: .6rem 1rem; border-radius: 12px; border: 1px solid transparent;
+  background: var(--primary); color: #fff; cursor: pointer;
+}
+.btn:hover{ background: var(--primary-600); }
+
+.input, .select, .chip {
+  background: var(--c-panel-2); color: var(--c-text);
+  border: 1px solid transparent; border-radius: var(--radius-sm);
+  padding: .6rem .8rem;
+}
+
+.grid {
+  display: grid; gap: var(--gap);
+}
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+
+@media (max-width: 900px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+
+/* Sidebar layout helpers (shared) */
+/* Layout */
+.app {
+  min-height: 100dvh; display: grid;
+  grid-template-columns: 260px 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "sidebar topbar"
+    "sidebar main";
+}
+.sidebar { grid-area: sidebar; background: var(--c-panel); }
+.topbar  { grid-area: topbar; background: var(--c-bg); }
+.main    { grid-area: main; padding: var(--gap-lg); }
+
+/* Content width & centering */
+.main > * { max-width: 1100px; margin-inline: auto; }
+
+/* Cards & borders (unify look) */
+.card { background: var(--c-panel); border-radius: var(--radius); box-shadow: var(--shadow); }
+.card, .card-subtle, .summary-bar, .filters { border: 1px solid var(--c-border); }
+
+/* Buttons spacing */
+.button-group, .entry-actions { display: flex; gap: var(--gap); flex-wrap: wrap; }
+
+/* Old variable fallbacks (in case old CSS still references them) */
+:root{
+  --card-bg: var(--c-panel);
+  --border-color: var(--c-border);
+  --accent-color: var(--accent, var(--primary));
+  --accent-color-hover: color-mix(in oklab, var(--accent, var(--primary)), black 12%);
+  --input-bg: var(--c-panel-2);
+  --text-color: var(--c-text);
+  --box-shadow: var(--shadow);
+}
+
+/* Make topbar match page bg (fixes “different color” header strip) */
+.topbar, header.topbar { background: var(--c-bg) !important; }

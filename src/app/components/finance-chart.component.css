@@ -1,19 +1,43 @@
-app-finance-chart {
+/* If this is in the component CSS, prefer :host. If global, keep the selector. */
+app-finance-chart,
+app-finance-chart :host {
   display: block;
-  max-width: 500px;
-  margin: 2rem auto;
-  padding: 1.5rem;
-  background-color: var(--card-bg); /* Reuse your card background */
-  border: 1px solid var(--border-color);
-  border-radius: 10px;
-  box-shadow: var(--shadow);
+  width: 100%;
 }
 
-canvas {
-   border-radius: 10px;
+/* Put the card/frame on the *page*, not the component.
+   We already wrapped the chart with a .card in the page template. */
+app-finance-chart {
+  /* remove fixed max-width and extra padding from here */
+  margin: 0;           /* card handles spacing */
+  padding: 0;          /* card handles padding */
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+/* Canvas sizing */
+app-finance-chart canvas {
+  display: block;
+  width: 100%;
+  height: auto;              /* keep aspect from internal sizing unless you want custom */
   max-width: 100%;
-
-  background-color: transparent; /* Make sure it doesn't clash with container */
-  margin-top: 2rem ;
+  border-radius: var(--radius);
+  background: transparent;
+  margin-top: 0;
 }
 
+/* Optional: force a nice responsive height using aspect-ratio */
+@supports (aspect-ratio: 1 / 1) {
+  app-finance-chart .chart-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;   /* tweak to 4/3 or 1/1 if you prefer */
+  }
+  app-finance-chart .chart-container canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;           /* Chart.js maintainAspectRatio:false pairs with this */
+  }
+}

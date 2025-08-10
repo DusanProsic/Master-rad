@@ -1,0 +1,42 @@
+.auth-page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: var(--gap-lg);
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  border: 1px solid var(--c-border);
+  display: grid;
+  gap: var(--gap);
+}
+
+.auth-title { margin: 0; text-align: center; }
+.auth-form { display: grid; gap: var(--gap); }
+.field { display: grid; gap: .4rem; }
+.label { font-weight: 600; }
+
+.password-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--gap);
+  align-items: center;
+}
+
+.toggle-pwd { padding-inline: .8rem; }
+
+.hint { color: var(--c-muted); font-size: .85rem; }
+.error { color: var(--danger); font-size: .85rem; }
+.w-full { width: 100%; }
+
+.auth-error {
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  background: color-mix(in oklab, var(--danger), transparent 90%);
+  padding: .6rem .8rem;
+  border-radius: var(--radius-sm);
+}
+
+.auth-link { text-align: center; margin: 0; }

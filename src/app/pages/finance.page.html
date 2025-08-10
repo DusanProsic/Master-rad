@@ -1,122 +1,128 @@
-<div class="layout-container">
-  
- 
-  <!-- Main Content -->
-  <div class="main-content">
-    <header class="topbar">
-      <h1>Finance Tracker</h1>
-    </header>
+<div class="app">
+  <!-- optional sidebar lives here globally -->
 
+  <header class="topbar">
+    <h1>Finance Tracker</h1>
+    <!-- put your theme toggle button in the shared topbar if you like -->
+  </header>
 
-<!-- Finance Entry Form -->
- 
-<form #financeFormRef [formGroup]="financeForm" (ngSubmit)="onSubmit()" class="finance-form">
-  <input type="text" formControlName="description" placeholder="Description" required>
-  <input type="number" formControlName="amount" placeholder="Amount" required>
+  <main class="main">
+     <div class="container">
+    <!-- Form + Filters -->
+    <section class="grid grid-2">
+      
+      <!-- Finance Entry Form -->
+      <form #financeFormRef [formGroup]="financeForm" (ngSubmit)="onSubmit()" class="card finance-form">
+        <div class="grid grid-3 w-full">
+          <input class="input" type="text" formControlName="description" placeholder="Description" required>
+          <input class="input" type="number" formControlName="amount" placeholder="Amount" required>
+          <select class="select" formControlName="type">
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+          </select>
+        </div>
 
-  <select formControlName="type">
-    <option value="expense">Expense</option>
-    <option value="income">Income</option>
-  </select>
+        <div class="stack">
+          <div *ngIf="financeForm.get('type')?.value === 'income'">
+            <label class="label">Associated Goal (optional)</label>
+            <select class="select" formControlName="goalId">
+              <option value="">-- None --</option>
+              <option *ngFor="let goal of goals$ | async" [value]="goal.id">
+                {{ goal.name }}
+              </option>
+            </select>
+          </div>
 
-  <div *ngIf="financeForm.get('type')?.value === 'income'">
-  <label for="goal">Associated Goal (optional):</label>
-  <select formControlName="goalId">
-    <option value="">-- None --</option>
-    <option *ngFor="let goal of goals$ | async" [value]="goal.id">
-      {{ goal.name }}
-    </option>
-  </select>
-</div>
+          <!-- Selected Goal Info -->
+          <div *ngIf="selectedGoalName" class="goal-info card-subtle">
+            <p><strong>Selected Goal:</strong> {{ selectedGoalName }}
+              (Target: {{ selectedGoalTarget | currency:'RSD':'symbol':'1.0-0' }})
+            </p>
+            <p>Progress: {{ selectedGoalProgress | number:'1.0-0' }}%</p>
+            <p>Remaining: {{ selectedGoalRemaining | currency:'RSD':'symbol':'1.0-0' }}</p>
 
+            <div class="progress-bar">
+              <div class="progress" [style.width.%]="selectedGoalProgress"></div>
+            </div>
+          </div>
+        </div>
 
-  <!-- Selected Goal Info -->
-  <div *ngIf="selectedGoalName" class="selected-goal">
-    <p>
-      <strong>Selected Goal:</strong> {{ selectedGoalName }}
-      (Target: {{ selectedGoalTarget | currency:'RSD':'symbol':'1.0-0' }})
-    </p>
-    <p>Progress: {{ selectedGoalProgress | number:'1.0-0' }}%</p>
-    <p>Remaining: {{ selectedGoalRemaining | currency:'RSD':'symbol':'1.0-0' }}</p>
-    <div class="progress-bar">
-      <div class="progress" [style.width.%]="selectedGoalProgress"></div>
+        <div class="button-group">
+          <button type="submit" class="btn">{{ editingId ? 'Update' : 'Add' }}</button>
+          <button type="button" *ngIf="editingId" (click)="cancelEdit()" class="btn" style="background:transparent;border:1px solid var(--c-border);color:var(--c-text)">Cancel</button>
+        </div>
+      </form>
+
+      <!-- Filters -->
+      <div class="card filters">
+        <div class="grid grid-3 w-full">
+          <div class="stack">
+            <label class="label" for="type">Type</label>
+            <select id="type" class="select" (change)="onFilterChange($event)">
+              <option value="all">All</option>
+              <option value="income">Income</option>
+              <option value="expense">Expense</option>
+            </select>
+          </div>
+
+          <div class="stack">
+            <label class="label" for="date">Date</label>
+            <input id="date" type="date" class="input" (change)="onDateChange($event)">
+          </div>
+
+          <div class="stack">
+            <label class="label" for="goal">Goal</label>
+            <select id="goal" class="select" (change)="onGoalFilterChange($event)">
+              <option value="all">All</option>
+              <option *ngFor="let goal of goals$ | async" [value]="goal.id">{{ goal.name }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Entries -->
+    <section class="stack">
+      <ul class="entries-list">
+        <li *ngFor="let entry of filteredEntries$ | async" class="card" [class.goal-card]="entry.goalId">
+          <div class="entry-header">
+            <span class="entry-description">
+              {{ entry.description }} — {{ entry.amount | currency:'RSD':'symbol':'1.0-0' }} ({{ entry.type }})
+            </span>
+            <span *ngIf="entry.goalId" class="goal-tag">🎯 Goal</span>
+          </div>
+
+          <div *ngIf="entry.goalId" class="entry-goal-info">
+            <p>
+              Goal: <strong>{{ getGoalName(entry.goalId) }}</strong><br>
+              Contribution: {{ getEntryGoalProgress(entry) | number:'1.0-0' }}%<br>
+              Goal Progress: {{ getGoalOverallProgress(entry.goalId) | number:'1.0-0' }}%
+            </p>
+            <div class="progress-bar">
+              <div class="progress" [style.width.%]="getEntryGoalProgress(entry)"></div>
+            </div>
+          </div>
+
+          <div class="entry-actions">
+            <button class="btn" (click)="editEntry(entry)">Edit</button>
+            <button class="btn" (click)="deleteEntry(entry.id)" style="background:transparent;border:1px solid var(--c-border);color:var(--c-text)">Delete</button>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Filtered Totals -->
+    <section class="card summary-bar" *ngIf="totals$ | async as totals">
+      <p><strong>Filtered Income:</strong> {{ totals.income | currency:'RSD':'symbol':'1.0-0' }}</p>
+      <p><strong>Filtered Expenses:</strong> {{ totals.expense | currency:'RSD':'symbol':'1.0-0' }}</p>
+      <p><strong>Filtered Savings:</strong> {{ totals.savings | currency:'RSD':'symbol':'1.0-0' }}</p>
+    </section>
+
+    <!-- Chart -->
+    <section class="card">
+      <app-finance-chart [totals$]="filteredTotals$"></app-finance-chart>
+
+    </section>
     </div>
-  </div>
-
-  <div class="button-group">
-  <button type="submit">{{ editingId ? 'Update' : 'Add' }}</button>
-  <button type="button" *ngIf="editingId" (click)="cancelEdit()">Cancel</button>
-</div>
-</form>
-
-<!-- Filters Section -->
-<div class="filters">
-  <div>
-    <label for="type">Type:</label>
-    <select id="type" (change)="onFilterChange($event)">
-      <option value="all">All</option>
-      <option value="income">Income</option>
-      <option value="expense">Expense</option>
-    </select>
-  </div>
-
-  <div>
-    <label for="date">Date:</label>
-    <input id="date" type="date" (change)="onDateChange($event)">
-  </div>
-
-  <div>
-    <label for="goal">Goal:</label>
-    <select id="goal" (change)="onGoalFilterChange($event)">
-      <option value="all">All</option>
-      <option *ngFor="let goal of goals$ | async" [value]="goal.id">{{ goal.name }}</option>
-    </select>
-  </div>
-</div>
-
-<ul class="entries-list">
-  <li 
-    *ngFor="let entry of filteredEntries$ | async"
-    [class.goal-card]="entry.goalId"
-  >
-    <div class="entry-header">
-      <span class="entry-description">
-        {{ entry.description }} - {{ entry.amount | currency:'RSD':'symbol':'1.0-0' }} ({{ entry.type }})
-      </span>
-
-      <span *ngIf="entry.goalId" class="goal-tag">🎯 Goal</span>
-    </div>
-
-    <div *ngIf="entry.goalId" class="entry-goal-info">
-      <p>
-        Goal: <strong>{{ getGoalName(entry.goalId) }}</strong><br>
-        Contribution: {{ getEntryGoalProgress(entry) | number:'1.0-0' }}%<br>
-        Goal Progress: {{ getGoalOverallProgress(entry.goalId) | number:'1.0-0' }}%
-      </p>
-      <div class="entry-progress-bar">
-  <div class="progress" [style.width.%]="getEntryGoalProgress(entry)"></div>
-</div>
-    </div>
-
-    <div class="entry-actions">
-      <button (click)="editEntry(entry)">Edit</button>
-      <button (click)="deleteEntry(entry.id)">Delete</button>
-    </div>
-  </li>
-</ul>
-
-
-
-<!-- Filtered Totals -->
-<div class="summary-bar" *ngIf="totals$ | async as totals">
-  <p><strong>Filtered Income:</strong> {{ totals.income | currency:'RSD':'symbol':'1.0-0' }}</p>
-  <p><strong>Filtered Expenses:</strong> {{ totals.expense | currency:'RSD':'symbol':'1.0-0' }}</p>
-  <p><strong>Filtered Savings:</strong> {{ totals.savings | currency:'RSD':'symbol':'1.0-0' }}</p>
-</div>
-
-<!-- Finance Chart -->
-<app-finance-chart [totals$]="totals$"></app-finance-chart>
-
-
- </div>
+  </main>
 </div>

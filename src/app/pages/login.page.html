@@ -1,23 +1,41 @@
-<div class="login-wrapper">
-  <h2>Login</h2>
+<div class="auth-page">
+  <section class="card auth-card">
+    <h2 class="auth-title">Login</h2>
 
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
-    <label for="email">Email</label>
-    <input id="email" type="email" formControlName="email" />
-    <div *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
-      <small>Email is required and must be valid.</small>
-    </div>
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="field">
+        <label class="label" for="email">Email</label>
+        <input id="email" class="input" type="email" formControlName="email" autocomplete="email" />
+        <small class="error" *ngIf="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+          Email is required and must be valid.
+        </small>
+      </div>
 
-    <label for="password">Password</label>
-    <input id="password" type="password" formControlName="password" />
-    <div *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
-      <small>Password is required.</small>
-    </div>
+      <div class="field">
+        <label class="label" for="password">Password</label>
+        <div class="password-row">
+          <input id="password" class="input" [type]="showPwd ? 'text' : 'password'" formControlName="password" autocomplete="current-password" />
+          <button type="button" class="btn btn-ghost toggle-pwd" (click)="showPwd = !showPwd">
+            {{ showPwd ? 'Hide' : 'Show' }}
+          </button>
+        </div>
+        <small class="error" *ngIf="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+          Password is required.
+        </small>
+      </div>
 
-    <button type="submit" [disabled]="loginForm.invalid">Login</button>
-  </form>
+      <button type="submit" class="btn w-full" [disabled]="loginForm.invalid || loading">
+        {{ loading ? 'Logging in…' : 'Login' }}
+      </button>
+    </form>
 
-  <div *ngIf="error" class="login-error">
-    {{ error }}
-  </div>
+    <div *ngIf="error" class="login-error">{{ error }}</div>
+
+    <p class="auth-link" style="text-align:center;margin:0">
+      Don’t have an account? <a routerLink="/register">Create one</a>
+    </p>
+    <p class="auth-link" style="text-align:center;margin:.25rem 0 0">
+      Forgot your password? <a routerLink="/reset-password">Reset it here</a>
+    </p>
+  </section>
 </div>

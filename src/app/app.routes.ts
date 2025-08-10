@@ -9,6 +9,7 @@ import { redirectIfAuthenticated } from './redirectIfAuthenticated.guard';
 import { NotFoundPage } from './pages/not-found/not-found.component';
 import { GoalsPage } from './pages/goals.page';
 import { CalendarPage } from './pages/calendar.page';
+import { ResetPasswordComponent } from './components/reset-password.component';
 
 export const routes: Routes = [
   // Public pages (no layout, no sidebar)
@@ -26,6 +27,8 @@ export const routes: Routes = [
        {path: 'goals', component: GoalsPage, canActivate: [authGuard] },
        {path: 'calendar', component: CalendarPage, canActivate: [authGuard] },
       { path: '**', component: NotFoundPage },
+      { path: 'reset-password', loadComponent: () => import('./components/reset-password.component').then(m => m.ResetPasswordComponent) }
+
     ]
   }
 ];

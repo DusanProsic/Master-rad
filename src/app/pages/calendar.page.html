@@ -1,25 +1,27 @@
-<section class="calendar-page">
-  <div class="top-bar">
+<div class="page">
+  <!-- Top bar -->
+  <header class="header">
     <h2>📅 Monthly Calendar</h2>
-    <div class="calendar-header">
-      <button (click)="previousMonth()">◀</button>
-      <h2 class="calendar-title">{{ getMonthName(currentMonth) }} {{ currentYear }}</h2>
-      <button (click)="nextMonth()">▶</button>
+    <div class="calendar-nav card">
+      <button class="btn btn-ghost" (click)="previousMonth()">◀</button>
+      <h3 class="calendar-title">{{ getMonthName(currentMonth) }} {{ currentYear }}</h3>
+      <button class="btn btn-ghost" (click)="nextMonth()">▶</button>
     </div>
-  </div>
+  </header>
 
+  <!-- Weekday labels -->
   <div class="calendar-weekdays">
     <div *ngFor="let day of ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']">{{ day }}</div>
   </div>
 
+  <!-- Days grid -->
   <div class="calendar-grid">
     <div
-  class="calendar-day"
-  *ngFor="let date of getDaysInMonth()"
-  [ngClass]="{ 'selected': isSelected(date) }"
-  (click)="selectDate(date)"
->
-
+      class="calendar-day card-subtle"
+      *ngFor="let date of getDaysInMonth()"
+      [class.selected]="isSelected(date)"
+      (click)="selectDate(date)"
+    >
       <strong>{{ date.getDate() }}</strong>
       <ul *ngIf="reminders[format(date)]?.length">
         <li *ngFor="let r of reminders[format(date)] trackBy: trackById">
@@ -29,35 +31,36 @@
     </div>
   </div>
 
-  <div class="reminder-form" *ngIf="selectedDate">
+  <!-- Add reminder form -->
+  <section *ngIf="selectedDate" class="card reminder-form">
     <h3>➕ Add Reminder for {{ selectedDate }}</h3>
-    <input [(ngModel)]="newReminder" placeholder="Reminder text..." />
+    <input class="input" [(ngModel)]="newReminder" placeholder="Reminder text..." />
     <div class="reminder-options">
-  <input [(ngModel)]="reminderTime" type="time" class="reminder-time" />
- <label>
-  <div class="checkbox-row">
-  <input type="checkbox" [(ngModel)]="sendEmail" id="sendEmailCheckbox" />
-  <label for="sendEmailCheckbox">Send email reminder</label>
-</div>
-</label>
-  <button (click)="addReminder()" class="add-button">Add</button>
-</div>
-  </div>
+      <input class="input" [(ngModel)]="reminderTime" type="time" />
+      <label class="checkbox-row">
+        <input type="checkbox" [(ngModel)]="sendEmail" />
+        Send email reminder
+      </label>
+      <button class="btn" (click)="addReminder()">Add</button>
+    </div>
+  </section>
 
-  <div class="reminder-list" *ngIf="selectedDate && reminders[selectedDate]?.length">
+  <!-- Reminders list -->
+  <section *ngIf="selectedDate && reminders[selectedDate]?.length" class="card reminder-list">
     <h4>📌 Reminders for {{ selectedDate }}:</h4>
     <ul>
       <li *ngFor="let r of reminders[selectedDate] trackBy: trackById">
-        {{ r.time ? r.time + ' - ' : '' }}{{ r.message }}
-        <button (click)="deleteReminderById(r.id, selectedDate)">X</button>
+        <span>{{ r.time ? r.time + ' - ' : '' }}{{ r.message }}</span>
+        <button class="btn btn-ghost danger" (click)="deleteReminderById(r.id, selectedDate)">X</button>
       </li>
     </ul>
-  </div>
+  </section>
 
-  <section class="email-reminder-form">
-  <h3>📤 Send Manual Email Reminder</h3>
-  <label>Message:</label>
-  <input [(ngModel)]="reminderText" type="text" placeholder="Reminder message" />
-  <button (click)="sendEmailReminder()">Send</button>
-</section>
-</section>
+  <!-- Manual email reminder -->
+  <section class="card email-reminder-form">
+    <h3>📤 Send Manual Email Reminder</h3>
+    <label>Message:</label>
+    <input class="input" [(ngModel)]="reminderText" type="text" placeholder="Reminder message" />
+    <button class="btn" (click)="sendEmailReminder()">Send</button>
+  </section>
+</div>

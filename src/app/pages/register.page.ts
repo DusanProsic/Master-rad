@@ -1,36 +1,44 @@
-import { Component } from '@angular/core';
+// src/app/pages/register.page.ts
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Auth, createUserWithEmailAndPassword } from '@angular/fire/auth';
-import { Router } from '@angular/router';
+import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { RouterModule, Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
   standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './register.page.html',
-  styleUrls: ['./register.page.css'],
-  imports: [CommonModule, ReactiveFormsModule]
+  styleUrls: ['./register.page.css']
 })
-export class RegisterPage {
-  registerForm: FormGroup;
+export class RegisterPage implements OnInit {
+  showPwd = false;
+  loading = false;
   error: string | null = null;
 
-  constructor(private fb: FormBuilder, private auth: Auth, private router: Router) {
+  registerForm!: FormGroup;
+
+  constructor(private fb: FormBuilder, private router: Router) {}
+
+  ngOnInit(): void {
     this.registerForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required]
+      password: ['', Validators.required],
     });
   }
 
   async onSubmit() {
-    const { email, password } = this.registerForm.value;
-    this.error = null;
-
+    if (this.registerForm.invalid || this.loading) return;
+    this.loading = true; this.error = null;
     try {
-      await createUserWithEmailAndPassword(this.auth, email, password);
-      this.router.navigate(['/login']);
-    } catch (err: any) {
-      this.error = err.message;
+      // TODO: createUser...
+      // this.router.navigate(['/dashboard']);
+    } catch (e: any) {
+      this.error = e?.message ?? 'Registration failed.';
+    } finally {
+      this.loading = false;
     }
   }
+
+  goTo(path: string) { this.router.navigate([path]); }
 }

@@ -1,24 +1,38 @@
-<h2>Register</h2>
+<div class="auth-page">
+  <section class="card auth-card">
+    <h2 class="auth-title">Create Account</h2>
 
-<form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
-  <label>Email</label>
-  <input type="email" formControlName="email" />
-  <div *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
-    <small>Email is required and must be valid.</small>
-  </div>
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="auth-form">
+      <div class="field">
+        <label class="label" for="reg-email">Email</label>
+        <input id="reg-email" class="input" type="email" formControlName="email" autocomplete="email" />
+        <small class="error" *ngIf="registerForm.get('email')?.invalid && registerForm.get('email')?.touched">
+          Email is required and must be valid.
+        </small>
+      </div>
 
-  <label>Password</label>
-  <input type="password" formControlName="password" />
-  <div *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
-    <small>Password is required.</small>
-  </div>
+      <div class="field">
+        <label class="label" for="reg-password">Password</label>
+        <div class="password-row">
+          <input id="reg-password" class="input" [type]="showPwd ? 'text' : 'password'" formControlName="password" autocomplete="new-password" />
+          <button type="button" class="btn btn-ghost toggle-pwd" (click)="showPwd = !showPwd">
+            {{ showPwd ? 'Hide' : 'Show' }}
+          </button>
+        </div>
+        <small class="error" *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched">
+          Password is required.
+        </small>
+      </div>
 
-  <button type="submit" [disabled]="registerForm.invalid">Create Account</button>
-</form>
+      <button class="btn w-full" type="submit" [disabled]="registerForm.invalid || loading">
+        {{ loading ? 'Creating…' : 'Create Account' }}
+      </button>
+    </form>
 
-<p *ngIf="error" style="color: red;">{{ error }}</p>
+    <div *ngIf="error" class="auth-error">{{ error }}</div>
 
-<p>
-  Already have an account?
-  <a routerLink="/login">Log in here</a>
-</p>
+    <p class="auth-link" style="text-align:center;margin:0">
+      Already have an account? <a routerLink="/login">Log in here</a>
+    </p>
+  </section>
+</div>

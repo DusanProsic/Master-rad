@@ -22,26 +22,36 @@ export class BudgetGoalsComponent implements OnInit {
 
   newGoal: NewGoal = { name: '', target: 0, currency: 'RSD' };
   editingId: string | null = null;
+  trackById = (_: number, g: Goal) => g.id;
 
   constructor(private goalService: GoalService, private firestore: Firestore) {
     this.goals$ = this.goalService.getGoals();
     const entriesRef = collection(this.firestore, 'entries');
     this.entries$ = collectionData(entriesRef, { idField: 'id' });
+    
   }
 
   ngOnInit(): void {
     this.goalsWithProgress$ = combineLatest([this.goals$, this.entries$]).pipe(
       map(([goals, entries]) => {
-        return goals.map(goal => {
-          const goalEntries = entries.filter(e => e.goalId === goal.id);
-          const totalForGoal = goalEntries.reduce((sum, e) => sum + e.amount, 0);
-          const percent = goal.target > 0 ? Math.min((totalForGoal / goal.target) * 100, 100) : 0;
-          const remaining = Math.max(goal.target - totalForGoal, 0);
-          return { ...goal, totalForGoal, percent, remaining };
-        });
-      })
-    );
-  }
+      const items = goals.map(goal => {
+        const goalEntries = entries.filter(e => e.goalId === goal.id);
+        const totalForGoal = goalEntries.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+        const percentRaw = goal.target > 0 ? (totalForGoal / goal.target) * 100 : 0;
+        const percent = Math.min(Math.max(percentRaw, 0), 100);
+        const remaining = Math.max(goal.target - totalForGoal, 0);
+        return { ...goal, totalForGoal, percent, remaining };
+      });
+
+      return items.sort((a, b) => {
+        const aDone = a.percent >= 100 ? 1 : 0;
+        const bDone = b.percent >= 100 ? 1 : 0;
+        if (aDone !== bDone) return aDone - bDone;      // not done first
+        return b.percent - a.percent;                   // higher % first
+      });
+    })
+  );
+}
 
   async addGoal() {
     if (this.newGoal.name && this.newGoal.target > 0) {

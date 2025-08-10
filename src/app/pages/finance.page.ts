@@ -1,13 +1,22 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Firestore, collection, addDoc, deleteDoc, doc, updateDoc, collectionData, serverTimestamp } from '@angular/fire/firestore';
-import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, BehaviorSubject, combineLatest, Subject } from 'rxjs';
+import { map, takeUntil } from 'rxjs/operators';
 import { GoalService, Goal } from '../components/goal-service.component';
 import { FinanceChartComponent } from '../components/finance-chart.component';
 import { ThemeService } from '../services/theme.service';
+
+type Entry = {
+  id: string;
+  description: string;
+  amount: number;
+  type: 'income' | 'expense';
+  goalId?: string | null;
+  timestamp?: any;
+};
 
 @Component({
   standalone: true,
@@ -16,24 +25,30 @@ import { ThemeService } from '../services/theme.service';
   styleUrls: ['./finance.page.css'],
   imports: [CommonModule, ReactiveFormsModule, FormsModule, FinanceChartComponent],
 })
-export class FinancePage implements OnInit {
+export class FinancePage implements OnInit, OnDestroy {
   @ViewChild('financeFormRef') financeFormRef!: ElementRef;
-  entries$: Observable<any[]>;
+  private destroy$ = new Subject<void>();
+
+  entries$: Observable<Entry[]>;
+  private entriesSnapshot: Entry[] = [];
+
   goals$: Observable<Goal[]>;
   latestGoals: Goal[] = [];
   goalProgressMap: { [goalId: string]: number } = {};
 
-  selectedGoalName: string = '';
-  selectedGoalTarget: number = 0;
-  selectedGoalRemaining: number = 0;
-  selectedGoalProgress: number = 0;
+  selectedGoalName = '';
+  selectedGoalTarget = 0;
+  selectedGoalRemaining = 0;
+  selectedGoalProgress = 0;
 
   financeForm: FormGroup;
-  filterType$ = new BehaviorSubject<string>('all');
-  dateFilter$ = new BehaviorSubject<string>('all');
-  goalFilter$ = new BehaviorSubject<string>('all');
 
-  filteredEntries$!: Observable<any[]>;
+  filterType$ = new BehaviorSubject<'all'|'income'|'expense'>('all');
+  dateFilter$  = new BehaviorSubject<string | 'all'>('all');   // YYYY-MM-DD or 'all'
+  goalFilter$  = new BehaviorSubject<string | 'all'>('all');
+
+  filteredEntries$!: Observable<Entry[]>;
+  filteredTotals$!: Observable<{ income: number; expense: number; savings: number }>;
   totals$!: Observable<{ income: number; expense: number; savings: number }>;
   editingId: string | null = null;
 
@@ -41,13 +56,11 @@ export class FinancePage implements OnInit {
     private fb: FormBuilder,
     private firestore: Firestore,
     private goalService: GoalService,
-    public themeService: ThemeService // public so we can access it in template
+    public themeService: ThemeService
   ) {
     const entriesRef = collection(this.firestore, 'entries');
-    this.entries$ = collectionData(entriesRef, { idField: 'id' });
-
+    this.entries$ = collectionData(entriesRef, { idField: 'id' }) as Observable<Entry[]>;
     this.goals$ = this.goalService.getGoals();
-    this.goals$.subscribe(goals => (this.latestGoals = goals));
 
     this.financeForm = this.fb.group({
       description: ['', Validators.required],
@@ -58,105 +71,115 @@ export class FinancePage implements OnInit {
   }
 
   ngOnInit() {
+    this.entries$.pipe(takeUntil(this.destroy$)).subscribe(list => (this.entriesSnapshot = list));
+    this.goals$.pipe(takeUntil(this.destroy$)).subscribe(goals => (this.latestGoals = goals));
+
     this.setupFilteredEntries();
 
-    this.financeForm.get('goalId')?.valueChanges.subscribe(goalId => {
-      this.selectedGoalName = this.getGoalName(goalId);
-      this.updateGoalProgressPreview();
-    });
-
-    this.financeForm.get('type')?.valueChanges.subscribe(type => {
-  if (type !== 'income') {
-    this.financeForm.patchValue({ goalId: '' });
-  }
-});
-
-    this.financeForm.valueChanges.subscribe(() => this.updateGoalProgressPreview());
-
-    // Precompute goal totals
-    combineLatest([this.goals$, this.entries$]).subscribe(([goals, entries]) => {
-      this.goalProgressMap = {};
-      for (const goal of goals) {
-        const goalEntries = entries.filter(e => e.goalId === goal.id);
-        const totalForGoal = goalEntries.reduce((sum, e) =>
-          sum + (e.type === 'income' ? e.amount : -e.amount), 0
-        );
-        this.goalProgressMap[goal.id] = Math.min((totalForGoal / goal.target) * 100, 100);
-      }
-    });
-
-    // Filtered totals
-    this.totals$ = this.filteredEntries$.pipe(
+    this.filteredTotals$ = this.filteredEntries$.pipe(
       map(entries => {
-        const income = entries.filter(e => e.type === 'income').reduce((sum, e) => sum + e.amount, 0);
-        const expense = entries.filter(e => e.type === 'expense').reduce((sum, e) => sum + e.amount, 0);
+        const income = entries.filter(e => e.type === 'income').reduce((s, e) => s + Number(e.amount || 0), 0);
+        const expense = entries.filter(e => e.type === 'expense').reduce((s, e) => s + Number(e.amount || 0), 0);
         return { income, expense, savings: income - expense };
       })
     );
+
+    this.totals$ = this.entries$.pipe(
+      map(entries => {
+        const income = entries.filter(e => e.type === 'income').reduce((s, e) => s + Number(e.amount || 0), 0);
+        const expense = entries.filter(e => e.type === 'expense').reduce((s, e) => s + Number(e.amount || 0), 0);
+        return { income, expense, savings: income - expense };
+      })
+    );
+
+    combineLatest([this.goals$, this.entries$])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([goals, entries]) => {
+        const mapProgress: { [id: string]: number } = {};
+        for (const goal of goals) {
+          const goalEntries = entries.filter(e => e.goalId === goal.id);
+          const totalForGoal = goalEntries.reduce((sum, e) => sum + (e.type === 'income' ? Number(e.amount || 0) : -Number(e.amount || 0)), 0);
+          mapProgress[goal.id] = goal.target > 0 ? Math.min((totalForGoal / goal.target) * 100, 100) : 0;
+        }
+        this.goalProgressMap = mapProgress;
+      });
+
+    this.financeForm.get('goalId')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(goalId => {
+        this.selectedGoalName = this.getGoalName(goalId);
+        this.updateGoalProgressPreview();
+      });
+
+    this.financeForm.get('type')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(type => {
+        if (type !== 'income') this.financeForm.patchValue({ goalId: '' }, { emitEvent: true });
+      });
+
+    this.financeForm.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.updateGoalProgressPreview());
   }
 
-  setupFilteredEntries() {
-    this.filteredEntries$ = combineLatest([
-      this.entries$,
-      this.filterType$,
-      this.dateFilter$,
-      this.goalFilter$
-    ]).pipe(
+  ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
+
+  private toYMD(input: any): string | null {
+    if (!input) return null;
+    if (typeof input?.seconds === 'number') {
+      const d = new Date(input.seconds * 1000);
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    if (input instanceof Date) {
+      const d = input;
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    if (typeof input === 'string') {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(input)) return input;
+      const d = new Date(input);
+      if (!isNaN(d.getTime())) {
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      }
+    }
+    return null;
+  }
+
+  private setupFilteredEntries() {
+    this.filteredEntries$ = combineLatest([this.entries$, this.filterType$, this.dateFilter$, this.goalFilter$]).pipe(
       map(([entries, typeFilter, dateFilter, goalFilter]) => {
-        let filtered = entries;
-
-        if (typeFilter !== 'all') {
-          filtered = filtered.filter(e => e.type === typeFilter);
-        }
-
-        if (dateFilter !== 'all') {
-          filtered = filtered.filter(e => {
-            const date = new Date(e.timestamp?.seconds * 1000);
-            const formatted = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-            return formatted === dateFilter;
-          });
-        }
-
-        if (goalFilter !== 'all') {
-          filtered = filtered.filter(e => e.goalId === goalFilter);
-        }
-
+        let filtered = entries.slice();
+        if (typeFilter !== 'all') filtered = filtered.filter(e => e.type === typeFilter);
+        if (dateFilter !== 'all') filtered = filtered.filter(e => this.toYMD(e.timestamp) === dateFilter);
+        if (goalFilter !== 'all') filtered = filtered.filter(e => (e.goalId ?? '') === goalFilter);
         return filtered;
       })
     );
   }
 
   onDateChange(event: Event) {
-    const value = (event.target as HTMLInputElement).value;
-    this.dateFilter$.next(value || 'all');
+    const value = (event.target as HTMLInputElement).value || 'all';
+    this.dateFilter$.next(value);
   }
-
   onGoalFilterChange(event: Event) {
-    const value = (event.target as HTMLSelectElement).value;
-    this.goalFilter$.next(value || 'all');
+    const value = (event.target as HTMLSelectElement).value || 'all';
+    this.goalFilter$.next(value as any);
   }
-
   onFilterChange(event: Event) {
-    const select = event.target as HTMLSelectElement;
-    this.filterType$.next(select.value);
+    const value = (event.target as HTMLSelectElement).value as 'all'|'income'|'expense';
+    this.filterType$.next(value);
   }
 
- editEntry(entry: any) {
-  this.editingId = entry.id;
-  this.financeForm.setValue({
-    description: entry.description,
-    amount: entry.amount,
-    type: entry.type,
-    goalId: entry.goalId || ''
-  });
-  this.updateGoalProgressPreview();
-
-  // Scroll to the form
-  setTimeout(() => {
-    this.financeFormRef?.nativeElement.scrollIntoView({ behavior: 'smooth' });
-  }, 100);
-}
-
+  editEntry(entry: Entry) {
+    this.editingId = entry.id;
+    this.financeForm.setValue({
+      description: entry.description,
+      amount: entry.amount,
+      type: entry.type,
+      goalId: entry.goalId || ''
+    });
+    this.updateGoalProgressPreview();
+    setTimeout(() => this.financeFormRef?.nativeElement.scrollIntoView({ behavior: 'smooth' }), 100);
+  }
 
   cancelEdit() {
     this.editingId = null;
@@ -165,27 +188,28 @@ export class FinancePage implements OnInit {
   }
 
   async onSubmit() {
-    if (this.financeForm.valid) {
-      const formData = this.financeForm.value;
-      const entriesRef = collection(this.firestore, 'entries');
+    if (this.financeForm.invalid) return;
+    const formData = this.financeForm.value;
+    const entriesRef = collection(this.firestore, 'entries');
 
-      const entryData = {
-        ...formData,
-        goalId: formData.goalId || null,
-        timestamp: serverTimestamp()
-      };
+    const entryData: Partial<Entry> & { timestamp: any } = {
+      description: formData.description,
+      amount: Number(formData.amount || 0),
+      type: formData.type,
+      goalId: formData.goalId || null,
+      timestamp: serverTimestamp()
+    };
 
-      if (this.editingId) {
-        const docRef = doc(this.firestore, `entries/${this.editingId}`);
-        await updateDoc(docRef, entryData);
-        this.editingId = null;
-      } else {
-        await addDoc(entriesRef, entryData);
-      }
-
-      this.financeForm.reset({ type: 'expense', goalId: '' });
-      this.updateGoalProgressPreview();
+    if (this.editingId) {
+      const docRef = doc(this.firestore, `entries/${this.editingId}`);
+      await updateDoc(docRef, entryData);
+      this.editingId = null;
+    } else {
+      await addDoc(entriesRef, entryData);
     }
+
+    this.financeForm.reset({ type: 'expense', goalId: '' });
+    this.updateGoalProgressPreview();
   }
 
   async deleteEntry(id: string) {
@@ -200,14 +224,12 @@ export class FinancePage implements OnInit {
     return goal ? goal.name : '';
   }
 
- getEntryGoalProgress(entry: any): number {
-  if (!entry || !entry.goalId || !entry.amount) return 0;
-
-  const goal = this.latestGoals.find(g => g.id === entry.goalId);
-  if (!goal || !goal.target) return 0;
-
-  return Math.min((entry.amount / goal.target) * 100, 100);
-}
+  getEntryGoalProgress(entry: Entry): number {
+    if (!entry || !entry.goalId || !entry.amount) return 0;
+    const goal = this.latestGoals.find(g => g.id === entry.goalId);
+    if (!goal || !goal.target) return 0;
+    return Math.min((Number(entry.amount) / goal.target) * 100, 100);
+  }
 
   getGoalOverallProgress(goalId: string): number {
     return this.goalProgressMap[goalId] || 0;
@@ -215,38 +237,23 @@ export class FinancePage implements OnInit {
 
   updateGoalProgressPreview() {
     const goalId = this.financeForm.get('goalId')?.value;
+    if (!goalId) { this.selectedGoalProgress = 0; this.selectedGoalRemaining = 0; this.selectedGoalTarget = 0; return; }
 
-    if (!goalId) {
-      this.selectedGoalProgress = 0;
-      this.selectedGoalRemaining = 0;
-      this.selectedGoalTarget = 0;
-      return;
-    }
-
-    const newAmount = this.financeForm.get('amount')?.value || 0;
+    const newAmount = Number(this.financeForm.get('amount')?.value || 0);
+    const type = this.financeForm.get('type')?.value as 'income'|'expense';
     const selectedGoal = this.latestGoals.find(g => g.id === goalId);
     this.selectedGoalTarget = selectedGoal?.target || 0;
 
-    this.entries$.subscribe(entries => {
-      const goalEntries = entries.filter(e => e.goalId === goalId);
-      const totalForGoal = goalEntries.reduce((sum, e) =>
-        sum + (e.type === 'income' ? e.amount : -e.amount), 0
-      );
+    const goalEntries = this.entriesSnapshot.filter(e => e.goalId === goalId);
+    const totalForGoal = goalEntries.reduce((sum, e) => sum + (e.type === 'income' ? Number(e.amount || 0) : -Number(e.amount || 0)), 0);
 
-      const previewTotal = totalForGoal + (
-        this.financeForm.get('amount')?.value
-          ? (this.financeForm.get('type')?.value === 'income' ? newAmount : -newAmount)
-          : 0
-      );
+    const previewTotal = totalForGoal + (this.financeForm.get('amount')?.value ? (type === 'income' ? newAmount : -newAmount) : 0);
 
-      this.selectedGoalRemaining = Math.max(this.selectedGoalTarget - previewTotal, 0);
-      this.selectedGoalProgress = this.selectedGoalTarget > 0
-        ? Math.min((previewTotal / this.selectedGoalTarget) * 100, 100)
-        : 0;
-    }).unsubscribe();
+    this.selectedGoalRemaining = Math.max(this.selectedGoalTarget - previewTotal, 0);
+    this.selectedGoalProgress = this.selectedGoalTarget > 0 ? Math.min((previewTotal / this.selectedGoalTarget) * 100, 100) : 0;
   }
 
-  // Dark mode toggle (using ThemeService)
+  // Global theme toggle
   toggleDarkMode() {
     this.themeService.toggleDarkMode();
   }

@@ -8,14 +8,16 @@ import { GoalService, Goal } from '../components/goal-service.component';
 import { ThemeService } from '../services/theme.service';
 import { BudgetGoalsComponent } from '../components/budget-goals.component';
 import { ReminderService } from '../services/reminder.service';
+import { FinanceChartComponent } from '../components/finance-chart.component';
 
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, BudgetGoalsComponent],
+  imports: [CommonModule, BudgetGoalsComponent, FinanceChartComponent],
   templateUrl: './dashboard.page.html',
   styleUrls: ['./dashboard.page.css']
+  
 })
 export class DashboardPage implements OnInit {
   private auth = inject(Auth);
@@ -23,6 +25,7 @@ export class DashboardPage implements OnInit {
   private firestore = inject(Firestore);
   private goalService = inject(GoalService);
   public themeService = inject(ThemeService); // for template use
+  trackByReminder = (_: number, r: any) => r.id ?? r.date + r.time + r.message;
 
   entries$: Observable<any[]>;
   goalsWithProgress$: Observable<any[]>;
