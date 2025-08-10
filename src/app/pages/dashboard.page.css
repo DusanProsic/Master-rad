@@ -1,37 +1,103 @@
-/* Uses global tokens & helpers from styles.css */
-.section-title { margin: 0; }
-.section-header { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); }
+/* Center like Finance/Calendar */
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  gap: var(--gap-lg);
+}
 
-.cards-3 { display: grid; gap: var(--gap); grid-template-columns: repeat(3, 1fr); }
+/* Section headers */
+.section-title { margin: 0; }
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+}
+
+/* Ghost button (local to dashboard to avoid global changes) */
+.btn-ghost {
+  background: transparent;
+  color: var(--c-text);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  padding: .45rem .8rem;
+  cursor: pointer;
+  transition: background-color .2s ease, border-color .2s ease;
+}
+.btn-ghost:hover {
+  background: var(--c-panel-2);
+  border-color: color-mix(in oklab, var(--c-border), var(--c-text) 18%);
+}
+
+/* 3 stat cards */
+.cards-3 {
+  display: grid;
+  gap: var(--gap);
+  grid-template-columns: repeat(3, 1fr);
+}
 @media (max-width: 900px) { .cards-3 { grid-template-columns: 1fr; } }
 
-/* Stat cards */
-.stat-card { display: grid; gap: .35rem; border: 1px solid var(--c-border); }
+.stat-card {
+  display: grid;
+  gap: .35rem;
+  border: 1px solid var(--c-border);
+}
 .stat-title { color: var(--c-muted); margin: 0; }
 .stat-value { font-size: 1.6rem; font-weight: 700; }
 
-/* Chart */
+/* Split: Chart left (compact), summary right (flexing) */
+.grid { display: grid; gap: var(--gap); }
+.grid-2 { grid-template-columns: 1fr 1fr; }
+
+.dashboard-split {
+  grid-template-columns: minmax(260px, 360px) 1fr; /* keeps chart modest */
+  align-items: stretch;
+}
+@media (max-width: 900px) {
+  .grid-2, .dashboard-split { grid-template-columns: 1fr; }
+}
+
+/* Chart sizing */
 .chart-card { border: 1px solid var(--c-border); }
-app-finance-chart, app-finance-chart > * { display: block; width: 100%; }
+app-finance-chart { display: block; width: 100%; }
+app-finance-chart .chart-container {
+  position: relative;
+  width: 100%;
+  max-width: 340px;          /* keep compact */
+  margin: 0 auto;
+  aspect-ratio: 1 / 1;       /* nice square pie */
+}
+app-finance-chart canvas {
+  position: absolute; inset: 0;
+  width: 100% !important; height: 100% !important;
+}
 
 /* Monthly summary */
 .monthly-card { border: 1px solid var(--c-border); }
-.monthly-rows { display: grid; gap: .4rem; }
+.monthly-rows { display: grid; gap: .5rem; }
 
-/* Goals preview */
-.goals-preview { border: 1px solid var(--c-border); display: grid; gap: var(--gap); }
+/* Goals preview block */
+.goals-preview {
+  border: 1px solid var(--c-border);
+  display: grid;
+  gap: var(--gap);
+}
 
-/* Reminders */
-.dashboard-reminders { border: 1px solid var(--c-border); display: grid; gap: var(--gap); }
-.reminder-list { list-style: none; padding: 0; margin: 0; display: grid; gap: .35rem; }
+/* Upcoming reminders */
+.dashboard-reminders {
+  border: 1px solid var(--c-border);
+  display: grid;
+  gap: var(--gap);
+}
+.reminder-list {
+  list-style: none;
+  padding: 0; margin: 0;
+  display: grid; gap: .35rem;
+}
 .reminder-list li {
   background: var(--c-panel-2);
   border: 1px solid var(--c-border);
   border-radius: var(--radius-sm);
   padding: .5rem .7rem;
 }
-
-/* Legacy classes from old layout are no longer needed */
-.dashboard-container, .main-content, .top-bar,
-.summary-cards, .chart, .goals-section,
-.goal-card, .goal-header, .progress-bar, .fill { all: unset; }

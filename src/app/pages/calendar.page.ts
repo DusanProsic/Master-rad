@@ -25,10 +25,13 @@ export class CalendarPage {
   currentDate = new Date();
   reminders: { [date: string]: { id: string, time?: string, message: string }[] } = {};
 
-  trackById(index: number, item: any): string {
-  return item.id || index.toString();
+ trackById(index: number, item: any): string {
+  return item?.id ?? String(index);
 }
-
+// Use this for the DAYS grid (dates + null placeholders)
+trackByDateIdx(index: number, _item: Date | null): number {
+  return index; // index is stable and safe for nulls
+}
 
   newReminder = '';
   selectedDate: string | null = null;
@@ -58,15 +61,27 @@ this.reminders[key].push({ id: r.id, time: r.time, message: r.message });
     });
   }
 
-  getDaysInMonth(): Date[] {
-    const days = [];
-    const date = new Date(this.currentYear, this.currentMonth, 1);
-    while (date.getMonth() === this.currentMonth) {
-      days.push(new Date(date));
-      date.setDate(date.getDate() + 1);
-    }
-    return days;
+ getDaysInMonth(): (Date | null)[] {
+  const days: (Date | null)[] = [];
+  const firstDay = new Date(this.currentYear, this.currentMonth, 1);
+  const lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
+   const firstDayIndex = new Date(this.currentYear, this.currentMonth, 1).getDay();
+
+  // Add empty slots for offset
+  for (let i = 0; i < firstDay.getDay(); i++) {
+    days.push(null);
   }
+
+  const date = new Date(this.currentYear, this.currentMonth, 1);
+  while (date.getMonth() === this.currentMonth) {
+    days.push(new Date(date));
+    date.setDate(date.getDate() + 1);
+  }
+
+
+  return days;
+}
+
 
   previousMonth() {
     if (this.currentMonth === 0) {

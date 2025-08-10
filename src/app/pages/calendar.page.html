@@ -16,9 +16,10 @@
 
   <!-- Days grid -->
   <div class="calendar-grid">
+  <ng-container *ngFor="let date of getDaysInMonth(); trackBy: trackByDateIdx">
     <div
+      *ngIf="date"
       class="calendar-day card-subtle"
-      *ngFor="let date of getDaysInMonth()"
       [class.selected]="isSelected(date)"
       (click)="selectDate(date)"
     >
@@ -29,7 +30,10 @@
         </li>
       </ul>
     </div>
-  </div>
+    <div *ngIf="!date" class="calendar-empty"></div>
+  </ng-container>
+</div>
+
 
   <!-- Add reminder form -->
   <section *ngIf="selectedDate" class="card reminder-form">

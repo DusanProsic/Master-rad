@@ -1,37 +1,31 @@
-<div class="app">
-  <!-- Global sidebar lives outside; this page just renders topbar + main -->
+<main class="main">
   <header class="topbar">
-    <h2>Dashboard Overview</h2>
-    <!-- Put your theme toggle here if you want -->
-  </header>
+  <div class="container topbar-inner">
+    <h1 class="page-title">Dashboard Overview</h1>
 
-  <main class="main">
+  </div>
+</header>
+  <div class="container page">
     <!-- Summary cards -->
     <section class="grid cards-3">
       <article class="card stat-card">
         <p class="stat-title">Income</p>
-        <div class="stat-value">
-          {{ (totals$ | async)?.income | currency:'USD':'symbol':'1.0-0' }}
-        </div>
+        <div class="stat-value">{{ (totals$ | async)?.income | currency:'USD':'symbol':'1.0-0' }}</div>
       </article>
 
       <article class="card stat-card">
         <p class="stat-title">Expenses</p>
-        <div class="stat-value">
-          {{ (totals$ | async)?.expense | currency:'USD':'symbol':'1.0-0' }}
-        </div>
+        <div class="stat-value">{{ (totals$ | async)?.expense | currency:'USD':'symbol':'1.0-0' }}</div>
       </article>
 
       <article class="card stat-card">
         <p class="stat-title">Savings</p>
-        <div class="stat-value">
-          {{ (totals$ | async)?.savings | currency:'USD':'symbol':'1.0-0' }}
-        </div>
+        <div class="stat-value">{{ (totals$ | async)?.savings | currency:'USD':'symbol':'1.0-0' }}</div>
       </article>
     </section>
 
     <!-- Chart + Monthly summary -->
-    <section class="grid grid-2">
+    <section class="grid grid-2 dashboard-split">
       <article class="card chart-card">
         <app-finance-chart [totals$]="totals$"></app-finance-chart>
       </article>
@@ -50,7 +44,7 @@
     <section class="card goals-preview">
       <div class="section-header">
         <h3 class="section-title">Goals</h3>
-        <a class="btn btn-ghost" (click)="goTo('/goals')">Open Goals</a>
+        <button class="btn-ghost" (click)="goTo('/goals')">Open Goals</button>
       </div>
       <app-budget-goals [displayOnly]="true"></app-budget-goals>
     </section>
@@ -59,7 +53,7 @@
     <section class="card dashboard-reminders">
       <div class="section-header">
         <h3 class="section-title">Upcoming Reminders</h3>
-        <a class="btn btn-ghost" (click)="goTo('/calendar')">Open Calendar</a>
+        <button class="btn-ghost" (click)="goTo('/calendar')">Open Calendar</button>
       </div>
       <ul class="reminder-list">
         <li *ngFor="let r of upcomingReminders$ | async; trackBy: trackByReminder">
@@ -67,5 +61,5 @@
         </li>
       </ul>
     </section>
-  </main>
-</div>
+  </div>
+</main>

@@ -1,6 +1,14 @@
-.page { display: grid; gap: var(--gap-lg); }
-
-/* Top bar */
+/* === Page Layout === */
+.page {
+  display: grid;
+  gap: var(--gap-lg);
+  padding: var(--gap-lg);
+  background: var(--c-bg);
+  color: var(--c-text);
+  max-width: 1100px;       /* limit width */
+  margin: 0 auto;          /* center horizontally */
+}
+/* === Top Bar === */
 .header {
   display: flex;
   flex-direction: column;
@@ -12,40 +20,65 @@
   justify-content: space-between;
   align-items: center;
   gap: var(--gap);
+  background: var(--c-panel);
+  padding: .6rem 1rem;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
 }
 
-.calendar-title { margin: 0; }
+.calendar-title {
+  margin: 0;
+  font-weight: bold;
+  color: var(--c-text);
+}
 
-/* Weekdays row */
+/* === Weekdays === */
 .calendar-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
   font-weight: bold;
   color: var(--accent);
+  background: var(--c-panel-2);
+  border-radius: var(--radius-sm);
+  padding: .4rem 0;
 }
 
-/* Days grid */
+/* === Days Grid === */
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: .4rem;
+  max-width: 100%;         /* prevent overflow */
 }
 
 .calendar-day {
   min-height: 90px;
   border: 1px solid var(--c-border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   padding: .4rem;
   display: flex;
   flex-direction: column;
   gap: .25rem;
   cursor: pointer;
-  transition: border-color 0.2s ease;
+  background: var(--c-panel);
+  transition: border-color 0.2s ease, background-color 0.3s ease;
 }
 
-.calendar-day:hover { border-color: var(--accent); }
-.calendar-day.selected { border: 2px solid var(--accent); }
+.calendar-day:empty {
+  background: transparent;
+  border: none;
+  cursor: default;
+}
+
+.calendar-day:hover {
+  border-color: var(--accent);
+}
+
+.calendar-day.selected {
+  border: 2px solid var(--accent);
+}
 
 .calendar-day ul {
   list-style: none;
@@ -53,16 +86,32 @@
   margin: 0;
   font-size: .75rem;
 }
+
 .calendar-day li {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Reminder form */
+.calendar-day.empty {
+  background: none;
+  border: none;
+  box-shadow: none;
+  cursor: default;
+}
+.calendar-day.empty:hover {
+  border: none;
+}
+
+/* === Reminder Forms === */
 .reminder-form, .email-reminder-form {
   display: grid;
   gap: var(--gap);
+  background: var(--c-panel);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  padding: var(--gap);
+  box-shadow: var(--shadow);
 }
 
 .reminder-options {
@@ -79,8 +128,15 @@
   font-size: .95rem;
 }
 
-/* Reminders list */
-.reminder-list ul { list-style: none; padding: 0; margin: 0; display: grid; gap: .4rem; }
+/* === Reminders List === */
+.reminder-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: .4rem;
+}
+
 .reminder-list li {
   display: flex;
   justify-content: space-between;
@@ -88,10 +144,35 @@
   background: var(--c-panel-2);
   padding: .4rem .6rem;
   border-radius: var(--radius-sm);
+  color: var(--c-text);
 }
-.reminder-list .danger { color: var(--danger); border-color: var(--danger); }
 
-/* Mobile tweaks */
-@media (max-width: 900px) {
-  .calendar-grid { grid-template-columns: repeat(7, minmax(32px, 1fr)); }
+.reminder-list .danger {
+  all: unset;                  /* remove all inherited/global styles */
+  cursor: pointer;
+  color: var(--danger);
+  font-weight: bold;
+  padding: 0 .3rem;
+  border-radius: 4px;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
+
+.reminder-list .danger:hover {
+  background-color: rgba(239, 68, 68, 0.15); /* subtle red hover */
+  color: var(--danger);
+}
+
+/* === Mobile Responsive === */
+@media (max-width: 900px) {
+  .calendar-grid {
+    grid-template-columns: repeat(7, minmax(32px, 1fr));
+  }
+}
+
+.calendar-day.empty {
+  background: none;
+  border: none;
+  box-shadow: none;
+  cursor: default;
+}
+.calendar-day.empty:hover { border: none; }
