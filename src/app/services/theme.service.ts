@@ -6,38 +6,43 @@ export type ThemeMode = 'light' | 'dark';
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
-  private key = 'app-theme';
-  private subject = new BehaviorSubject<ThemeMode>(this.readInitial());
-  theme$ = this.subject.asObservable();
+  private readonly storageKey = 'app-theme';
+  private themeSubject = new BehaviorSubject<ThemeMode>(this.getInitialTheme());
+  theme$ = this.themeSubject.asObservable();
 
-  constructor(@Inject(DOCUMENT) private doc: Document) {
-    this.apply(this.subject.value);
+  constructor(@Inject(DOCUMENT) private document: Document) {
+    this.applyTheme(this.themeSubject.value);
   }
-
-  /** Use this everywhere */
-  toggleDarkMode() {
-    const next: ThemeMode = this.subject.value === 'dark' ? 'light' : 'dark';
+toggleDarkMode() { this.toggleTheme(); }
+  /** Toggle between light and dark mode */
+  toggleTheme(): void {
+    const current = this.themeSubject.value;
+    const next = current === 'light' ? 'dark' : 'light';
     this.setTheme(next);
   }
 
-  setTheme(mode: ThemeMode) {
-    localStorage.setItem(this.key, mode);
-    this.subject.next(mode);
-    this.apply(mode);
+  /** Set a specific theme */
+  setTheme(mode: ThemeMode): void {
+    localStorage.setItem(this.storageKey, mode);
+    this.themeSubject.next(mode);
+    this.applyTheme(mode);
   }
 
+  /** Check if dark mode is active */
   isDarkMode(): boolean {
-    return this.subject.value === 'dark';
+    return this.themeSubject.value === 'dark';
   }
 
-  private apply(mode: ThemeMode) {
-    this.doc.documentElement.setAttribute('data-theme', mode === 'dark' ? 'dark' : 'light');
+  /** Apply the theme to the document */
+  private applyTheme(mode: ThemeMode): void {
+    this.document.documentElement.setAttribute('data-theme', mode);
   }
 
-  private readInitial(): ThemeMode {
-    const saved = localStorage.getItem(this.key) as ThemeMode | null;
+  /** Get initial theme from localStorage or system preference */
+  private getInitialTheme(): ThemeMode {
+    const saved = localStorage.getItem(this.storageKey) as ThemeMode | null;
     if (saved) return saved;
-    const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     return prefersDark ? 'dark' : 'light';
   }
 }

@@ -8,6 +8,21 @@
   all: unset;
 }
 
+/* Keep main content centered */
+.main .container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 var(--gap-lg);
+}
+
+/* Make topbar title align with main content */
+.topbar h1 {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 var(--gap-lg);
+}
+
+
 /* Form */
 .finance-form {
   display: grid;
@@ -33,15 +48,35 @@
 
 /* Entries list items should look like cards even without goals */
 .entries-list { list-style: none; padding: 0; margin: var(--gap) 0; display: grid; gap: var(--gap); }
-.entries-list li { background: var(--c-panel); border-radius: var(--radius); border: 1px solid var(--c-border); padding: var(--gap-lg); }
-.entries-list li.goal-card { border: 2px solid var(--accent); }
+/* Force border for all entries */
+.entries-list li {
+  background: var(--c-panel);
+  border-radius: var(--radius);
+  border: 1px solid var(--accent) !important; /* Force visible */
+  
+  padding: var(--gap-lg);
+}
+
+/* Goal entries keep their accent border */
+.entries-list li.goal-card {
+  border: 2px solid var(--accent) !important;
+  box-shadow: var(--shadow);
+}
 
 /* Entry header + actions spacing */
 .entry-header { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); }
 .entry-actions { display: flex; gap: var(--gap); margin-top: .5rem; }
 
 /* Summary bar matches cards */
-.summary-bar { border: 1px solid var(--c-border); }
+.summary-bar { border: 1px solid var(--c-border); 
+margin-bottom: 1rem;}
+
+.summary-wrap { padding: var(--gap-lg); }
+.summary-grid { display: grid; gap: .5rem; margin-bottom: 1rem; }
+@media (min-width: 900px) {
+  .summary-wrap { display: grid; grid-template-columns: 1fr 320px; gap: var(--gap-lg); align-items: center; }
+  .summary-grid { margin: 0; }
+}
 
 /* Chart: ensure it gets height and never clips */
 app-finance-chart { display: block; width: 100%; }

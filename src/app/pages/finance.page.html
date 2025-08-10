@@ -2,6 +2,7 @@
   <!-- optional sidebar lives here globally -->
 
   <header class="topbar">
+    
     <h1>Finance Tracker</h1>
     <!-- put your theme toggle button in the shared topbar if you like -->
   </header>
@@ -112,17 +113,17 @@
     </section>
 
     <!-- Filtered Totals -->
-    <section class="card summary-bar" *ngIf="totals$ | async as totals">
-      <p><strong>Filtered Income:</strong> {{ totals.income | currency:'RSD':'symbol':'1.0-0' }}</p>
-      <p><strong>Filtered Expenses:</strong> {{ totals.expense | currency:'RSD':'symbol':'1.0-0' }}</p>
-      <p><strong>Filtered Savings:</strong> {{ totals.savings | currency:'RSD':'symbol':'1.0-0' }}</p>
-    </section>
+   <section class="card summary-wrap">
+  <div class="summary-grid" *ngIf="filteredTotals$ | async as totals">
+    <p><strong>Filtered Income:</strong> {{ totals.income | currency:'RSD':'symbol':'1.0-0' }}</p>
+    <p><strong>Filtered Expenses:</strong> {{ totals.expense | currency:'RSD':'symbol':'1.0-0' }}</p>
+    <p><strong>Filtered Savings:</strong> {{ totals.savings | currency:'RSD':'symbol':'1.0-0' }}</p>
+  </div>
+  <app-finance-chart [totals$]="filteredTotals$"></app-finance-chart>
+</section>
 
     <!-- Chart -->
-    <section class="card">
-      <app-finance-chart [totals$]="filteredTotals$"></app-finance-chart>
-
-    </section>
+    
     </div>
   </main>
 </div>
