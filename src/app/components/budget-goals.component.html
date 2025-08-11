@@ -18,9 +18,31 @@
     </div>
   </section>
 
+  <div *ngIf="!displayOnly" class="card" style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;margin:.5rem 0 1rem;border:1px solid var(--c-border);padding:.6rem 1rem;">
+  <div>
+    <label class="label" style="margin-right:.4rem">Status</label>
+    <select class="select" (change)="setStatus($any($event.target).value)">
+  <option value="all">All</option>
+  <option value="completed">Completed</option>
+  <option value="in-progress">In progress</option>
+  <option value="not-started">Not started</option>
+</select>
+
+<select class="select" (change)="setSort($any($event.target).value)">
+  <option value="progress-desc">Closest to completion</option>
+  <option value="progress-asc">Least completed</option>
+  <option value="target-desc">Target (high → low)</option>
+  <option value="target-asc">Target (low → high)</option>
+  <option value="created-desc">Newest</option>
+  <option value="created-asc">Oldest</option>
+</select>
+  </div>
+</div>
+
+
   <!-- Goals List -->
   <section class="grid grid-3 goals-list">
-    <article *ngFor="let goal of goalsWithProgress$ | async; trackBy: trackById"
+    <article *ngFor="let goal of viewGoals$ | async; trackBy: trackById" class="goal-card card"
              class="card goal-card"
              [class.goal-complete]="goal.percent >= 100">
       <div class="goal-header">

@@ -1,8 +1,8 @@
-// src/app/pages/login.page.ts
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
+import { Auth, signInWithEmailAndPassword } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-login',
@@ -16,9 +16,13 @@ export class LoginPage implements OnInit {
   loading = false;
   error: string | null = null;
 
-  loginForm!: FormGroup; // declare first
+  loginForm!: FormGroup;
 
-  constructor(private fb: FormBuilder, private router: Router) {}
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private auth: Auth // Inject Firebase Auth
+  ) {}
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -29,10 +33,15 @@ export class LoginPage implements OnInit {
 
   async onSubmit() {
     if (this.loginForm.invalid || this.loading) return;
-    this.loading = true; this.error = null;
+
+    this.loading = true;
+    this.error = null;
+
+    const { email, password } = this.loginForm.value;
+
     try {
-      // TODO: signIn...
-      // this.router.navigate(['/dashboard']);
+      await signInWithEmailAndPassword(this.auth, email, password);
+      this.router.navigate(['/dashboard']);
     } catch (e: any) {
       this.error = e?.message ?? 'Login failed.';
     } finally {
@@ -40,5 +49,7 @@ export class LoginPage implements OnInit {
     }
   }
 
-  goTo(path: string) { this.router.navigate([path]); }
+  goTo(path: string) {
+    this.router.navigate([path]);
+  }
 }
