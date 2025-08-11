@@ -15,6 +15,7 @@ export const routes: Routes = [
   // Public pages (no layout, no sidebar)
   { path: 'login', component: LoginPage, canActivate: [redirectIfAuthenticated] },
   { path: 'register', component: RegisterPage, canActivate: [redirectIfAuthenticated] },
+  { path: 'reset-password', loadComponent: () => import('./components/reset-password.component').then(m => m.ResetPasswordComponent) },
 
   // Pages with layout (sidebar + topbar)
   {
@@ -27,7 +28,7 @@ export const routes: Routes = [
        {path: 'goals', component: GoalsPage, canActivate: [authGuard] },
        {path: 'calendar', component: CalendarPage, canActivate: [authGuard] },
       { path: '**', component: NotFoundPage },
-      { path: 'reset-password', loadComponent: () => import('./components/reset-password.component').then(m => m.ResetPasswordComponent) }
+      
 
     ]
   }
