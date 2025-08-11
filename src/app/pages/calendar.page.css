@@ -48,28 +48,21 @@
 /* === Days Grid === */
 .calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(100px, 1fr)); /* prevent squishing */
   gap: .4rem;
-  max-width: 100%;         /* prevent overflow */
+  overflow-x: auto; /* allow horizontal scroll on small screens */
 }
 
 .calendar-day {
-  min-height: 90px;
+  min-height: 100px; /* a bit taller for readability */
   border: 1px solid var(--c-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius);
   padding: .4rem;
   display: flex;
   flex-direction: column;
   gap: .25rem;
   cursor: pointer;
-  background: var(--c-panel);
-  transition: border-color 0.2s ease, background-color 0.3s ease;
-}
-
-.calendar-day:empty {
-  background: transparent;
-  border: none;
-  cursor: default;
+  transition: border-color 0.2s ease;
 }
 
 .calendar-day:hover {
@@ -79,6 +72,22 @@
 .calendar-day.selected {
   border: 2px solid var(--accent);
 }
+
+/* Scrollbar styling for mobile usability */
+.calendar-grid::-webkit-scrollbar {
+  height: 6px;
+}
+.calendar-grid::-webkit-scrollbar-thumb {
+  background: var(--c-border);
+  border-radius: 3px;
+}
+.calendar-day:empty {
+  background: transparent;
+  border: none;
+  cursor: default;
+}
+
+
 
 .calendar-day ul {
   list-style: none;

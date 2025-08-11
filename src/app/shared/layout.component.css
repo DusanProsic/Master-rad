@@ -1,27 +1,29 @@
-/* Layout container remains the same */
+/* === Layout Container === */
 .layout-container {
   display: flex;
   min-height: 100vh;
 }
-/* Sidebar layout with logout at bottom */
+
+/* === Sidebar === */
 .sidebar {
   position: sticky;
   top: 0;
   height: 100vh;
-  width: 250px;
-  background-color: #083344;
+  width: 240px;
+  background-color: #083344; /* Light mode color */
   color: white;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 2rem 1rem;
+  padding: 1rem;
+  box-sizing: border-box;
+  transition: background-color 0.3s ease;
 }
 
-.main-content {
-  flex-grow: 1;
-  padding: 2rem;
-  background-color: #f9f9f9;
-  overflow-y: auto;
+/* Dark mode sidebar */
+:root[data-theme="dark"] .sidebar {
+  background-color: var(--c-panel);
+  color: var(--c-text);
 }
 
 /* Navigation links */
@@ -33,7 +35,7 @@
 }
 
 .nav-links a {
-  color: #ffffff;
+  color: white;
   text-decoration: none;
   padding: 0.5rem 1rem;
   border-radius: 8px;
@@ -46,11 +48,11 @@
   background-color: #0f4c5c;
 }
 
-/* Logout section at the bottom */
+/* === Logout section === */
 .logout-section {
-  margin-top: auto; /* pushes it to the bottom */
+  margin-top: auto;
   padding-top: 2rem;
-  border-top: 1px solid #ccc;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .logout-section button {
@@ -65,4 +67,65 @@
 
 .logout-section button:hover {
   background-color: #c0392b;
+}
+
+/* === Main content === */
+.main-content {
+  flex-grow: 1;
+  padding: 2rem;
+  background-color: var(--c-bg);
+  overflow-y: auto;
+}
+
+/* === Topbar (Mobile only) === */
+.topbar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background: var(--c-panel-1, #083344);
+  border-bottom: 1px solid var(--c-border);
+}
+
+.hamburger {
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+/* === Mobile styles === */
+@media (max-width: 900px) {
+  .layout-container {
+    flex-direction: column;
+  }
+
+  .topbar {
+    display: flex;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+}
+
+/* === Force light mode sidebar color === */
+:root .sidebar {
+  background-color: #083344 !important;
+  color: white !important;
 }

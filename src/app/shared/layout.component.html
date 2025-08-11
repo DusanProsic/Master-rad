@@ -1,12 +1,19 @@
 <div class="layout-container">
-  <aside class="sidebar">
+  <!-- Topbar for mobile -->
+  <header class="topbar">
+    <button class="hamburger" (click)="toggleSidebar()">☰</button>
+    <h2>My Finance App</h2>
+  </header>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" [class.open]="sidebarOpen">
     <h2>My Finance App</h2>
 
     <nav class="nav-links">
-      <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
-      <a routerLink="/finance" routerLinkActive="active">Finance</a>
-      <a routerLink="/goals" routerLinkActive="active">Goals</a>
-      <a routerLink="/calendar" routerLinkActive="active">Calendar</a>
+      <a routerLink="/dashboard" routerLinkActive="active" (click)="closeSidebar()">Dashboard</a>
+      <a routerLink="/finance" routerLinkActive="active" (click)="closeSidebar()">Finance</a>
+      <a routerLink="/goals" routerLinkActive="active" (click)="closeSidebar()">Goals</a>
+      <a routerLink="/calendar" routerLinkActive="active" (click)="closeSidebar()">Calendar</a>
     </nav>
 
     <div class="logout-section">
@@ -14,6 +21,7 @@
     </div>
   </aside>
 
+  <!-- Main content -->
   <main class="main-content">
     <router-outlet></router-outlet>
   </main>

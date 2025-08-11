@@ -101,3 +101,20 @@ app-finance-chart canvas {
   border-radius: var(--radius-sm);
   padding: .5rem .7rem;
 }
+
+.main-content {
+  flex: 1;
+  padding: 1rem;
+}
+
+@media (min-width: 901px) {
+  .main-content {
+    margin-left: 240px; /* only when sidebar is fixed */
+  }
+}
+
+@media (max-width: 900px) {
+  .main-content {
+    margin-left: 0; /* no offset in mobile */
+  }
+}
