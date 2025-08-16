@@ -16,6 +16,9 @@ bootstrapApplication(AppComponent, {
     { provide: LOCALE_ID, useValue: 'sr' }, provideServiceWorker('ngsw-worker.js', {
             enabled: !isDevMode(),
             registrationStrategy: 'registerWhenStable:30000'
+          }), provideServiceWorker('ngsw-worker.js', {
+            enabled: !isDevMode(),
+            registrationStrategy: 'registerWhenStable:30000'
           })  // Set default locale to Serbian
   ]
 }).catch((err) => console.error(err));
