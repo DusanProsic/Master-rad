@@ -28,3 +28,19 @@
 }
 
 .goal-actions { display: flex; gap: var(--gap); flex-wrap: wrap; }
+
+.sort-card {
+  border: 1px solid var(--c-border);
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: .6rem 1rem;
+}
+
+.sort-controls {
+  display: flex;
+  gap: .6rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
