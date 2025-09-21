@@ -2,7 +2,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Observable, combineLatest, map, BehaviorSubject } from 'rxjs'; // ⬅ add BehaviorSubject
-import { GoalService, Goal, NewGoal } from './goal-service.component';
+import { GoalService, Goal, NewGoal } from '../services/goal.service.js';
 import { Firestore, collection, collectionData } from '@angular/fire/firestore';
 
 type SortOption =

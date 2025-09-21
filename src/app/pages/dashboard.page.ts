@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { Auth, signOut } from '@angular/fire/auth';
 import { collection, collectionData, Firestore } from '@angular/fire/firestore';
 import { Observable, map } from 'rxjs';
-import { GoalService, Goal } from '../components/goal-service.component';
+import { GoalService, Goal } from '../services/goal.service';
 import { ThemeService } from '../services/theme.service';
 import { BudgetGoalsComponent } from '../components/budget-goals.component';
 import { ReminderService } from '../services/reminder.service';
