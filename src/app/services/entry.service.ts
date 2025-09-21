@@ -12,9 +12,7 @@ export interface NewEntry {
   type: EntryType;
   category?: string;
   description?: string;
-  note?: string;
   date?: any;
-  currency?: string;
   goalId?: string;
 }
 export interface Entry extends NewEntry { id: string; }

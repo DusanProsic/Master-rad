@@ -8,6 +8,7 @@ import {
   doc,
   updateDoc
 } from '@angular/fire/firestore';
+
 import { Auth } from '@angular/fire/auth';
 import { Observable } from 'rxjs';
 import { combineLatest, map } from 'rxjs';

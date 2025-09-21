@@ -1,17 +1,18 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Observable, combineLatest, map, BehaviorSubject } from 'rxjs'; // ⬅ add BehaviorSubject
+import { Observable, combineLatest, map, BehaviorSubject } from 'rxjs';
 import { GoalService, Goal, NewGoal } from '../services/goal.service.js';
-import { Firestore, collection, collectionData } from '@angular/fire/firestore';
+import { EntryService } from '../services/entry.service'; // <— use your scoped entries
+import { authState } from '@angular/fire/auth';
 
 type SortOption =
-  | 'progress-desc'   // closest to completion
-  | 'progress-asc'    // least completed
-  | 'target-desc'     // biggest target first
-  | 'target-asc'      // smallest target first
-  | 'created-desc'    // newest first
-  | 'created-asc';    // oldest first
+  | 'progress-desc'
+  | 'progress-asc'
+  | 'target-desc'
+  | 'target-asc'
+  | 'created-desc'
+  | 'created-asc';
 
 type StatusFilter = 'all' | 'completed' | 'in-progress' | 'not-started';
 
@@ -28,10 +29,8 @@ export class BudgetGoalsComponent implements OnInit {
   goals$: Observable<Goal[]>;
   entries$: Observable<any[]>;
 
-  // original computed stream (kept)
+  // Computed streams
   goalsWithProgress$!: Observable<any[]>;
-
-  // NEW: UI subjects + final stream for template
   sort$   = new BehaviorSubject<SortOption>('progress-desc');
   status$ = new BehaviorSubject<StatusFilter>('all');
   viewGoals$!: Observable<any[]>;
@@ -40,38 +39,32 @@ export class BudgetGoalsComponent implements OnInit {
   editingId: string | null = null;
   trackById = (_: number, g: Goal) => g.id;
 
-  constructor(private goalService: GoalService, private firestore: Firestore) {
-    this.goals$ = this.goalService.getGoals();
-    const entriesRef = collection(this.firestore, 'entries');
-    this.entries$ = collectionData(entriesRef, { idField: 'id' });
+  constructor(
+    private goalService: GoalService,
+    private entryService: EntryService, // <— inject
+  ) {
+    this.goals$ = this.goalService.getGoals();          // user-scoped goals
+    this.entries$ = this.entryService.getEntries();    // user-scoped entries
   }
 
   ngOnInit(): void {
-    // compute totals/progress per goal
-    this.goalsWithProgress$ = combineLatest([this.goals$, this.entries$]).pipe(
-      map(([goals, entries]) => {
-        return goals.map(goal => {
-          const goalEntries = entries.filter(e => e.goalId === goal.id);
-          const totalForGoal = goalEntries.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
-          const percentRaw = goal.target > 0 ? (totalForGoal / goal.target) * 100 : 0;
-          const percent = Math.min(Math.max(percentRaw, 0), 100);
-          const remaining = Math.max(goal.target - totalForGoal, 0);
+    // Use the single source of truth for progress calc (filters to income + matches goalId)
+    this.goalsWithProgress$ = this.goalService.getGoalsWithProgress(this.entries$).pipe(
+      map(goals => goals.map(g => {
+        // normalize fields for UI
+        const createdAt =
+          (g as any)?.createdAt?.seconds ??
+          (g as any)?.createdAt ?? 0;
 
-          // best-effort createdAt (if you store it)
-          const createdAt =
-            (goal as any)?.createdAt?.seconds ??
-            (goal as any)?.createdAt ??
-            0;
-
-          return { ...goal, totalForGoal, saved: totalForGoal, percent, remaining, createdAt };
-        });
-      })
+        const remaining = Math.max((g.target ?? 0) - (g.contributed ?? 0), 0);
+        return { ...g, createdAt, remaining };
+      }))
     );
 
-    // apply filter + sort for the view
+    // Apply filter + sort for the view
     this.viewGoals$ = combineLatest([this.goalsWithProgress$, this.sort$, this.status$]).pipe(
       map(([goals, sort, status]) => {
-        // filter by status
+        // status filter
         let filtered = goals;
         if (status !== 'all') {
           filtered = goals.filter((g: any) => {
@@ -82,7 +75,7 @@ export class BudgetGoalsComponent implements OnInit {
           });
         }
 
-        // sorting helper
+        // sort
         const by = (a: any, b: any, key: 'percent' | 'target' | 'createdAt', dir: 1 | -1) =>
           (a[key] ?? 0) > (b[key] ?? 0) ? dir : (a[key] ?? 0) < (b[key] ?? 0) ? -dir : 0;
 
@@ -100,11 +93,12 @@ export class BudgetGoalsComponent implements OnInit {
     );
   }
 
-  // called from template
-  setSort(v: SortOption)      { this.sort$.next(v); }
-  setStatus(v: StatusFilter)  { this.status$.next(v); }
+  setSort(v: SortOption)     { this.sort$.next(v); }
+  setStatus(v: StatusFilter) { this.status$.next(v); }
 
   async addGoal() {
+    // ensure numeric
+    this.newGoal.target = Number(this.newGoal.target) || 0;
     if (this.newGoal.name && this.newGoal.target > 0) {
       await this.goalService.addGoal(this.newGoal);
       this.newGoal = { name: '', target: 0, currency: 'RSD' };
@@ -114,11 +108,12 @@ export class BudgetGoalsComponent implements OnInit {
   editGoal(goal: Goal) {
     if (this.displayOnly) return;
     this.editingId = goal.id;
-    this.newGoal = { name: goal.name, target: goal.target, currency: goal.currency };
+    this.newGoal = { name: goal.name, target: Number(goal.target) || 0, currency: goal.currency };
   }
 
   async updateGoal() {
     if (!this.editingId) return;
+    this.newGoal.target = Number(this.newGoal.target) || 0;
     await this.goalService.updateGoal(this.editingId, this.newGoal);
     this.editingId = null;
     this.newGoal = { name: '', target: 0, currency: 'RSD' };
