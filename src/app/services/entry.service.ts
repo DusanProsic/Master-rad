@@ -11,6 +11,7 @@ export interface NewEntry {
   amount: number;
   type: EntryType;
   category?: string;
+  description?: string;
   note?: string;
   date?: any;
   currency?: string;
