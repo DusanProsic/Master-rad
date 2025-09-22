@@ -87,13 +87,20 @@
   border-bottom: 1px solid var(--c-border);
 }
 
-.hamburger {
-  font-size: 1.5rem;
-  background: none;
-  border: none;
-  color: white;
-  cursor: pointer;
+/* component css */
+.hamburger { /* same light styles as above */ }
+
+:host-context([data-theme="dark"]) .hamburger {
+  border-color:#fff;
+  color:#fff;
+  background:rgba(255,255,255,.06);
 }
+:host-context([data-theme="dark"]) .hamburger:hover {
+  background:rgba(255,255,255,.12);
+}
+
+
+
 
 /* === Mobile styles === */
 @media (max-width: 900px) {

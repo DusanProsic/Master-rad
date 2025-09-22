@@ -7,22 +7,70 @@
   border-bottom: 1px solid var(--c-border);
 }
 
-.dark-mode-toggle {
-  background-color: var(--btn-bg);
-  color: var(--btn-text);
-  border: none;
-  border-radius: 50%;
-  padding: 0.6rem;
+/* Base look */
+.dark-mode-toggle{
+  --bg: #f3f4f6;               /* light */
+  --text: #111827;
+  --border: rgba(0,0,0,.18);
+  --hover-bg: #e5e7eb;
+
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:42px; height:42px;
+  border-radius:9999px;
+  border:1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: 0 6px 20px rgba(0,0,0,.12);
+  cursor:pointer;
+  transition: background-color .25s, color .25s, transform .12s, box-shadow .25s, border-color .25s;
+  backdrop-filter: saturate(180%) blur(8px);
+}
+
+.dark-mode-toggle:hover{
+  background: var(--hover-bg);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(0,0,0,.15);
+}
+.dark-mode-toggle:active{
+  transform: translateY(0) scale(.98);
+}
+
+/* Focus accessibility */
+.dark-mode-toggle:focus-visible{
+  outline: 2px solid #3b82f6;
+  outline-offset: 3px;
+}
+
+/* Icons swap & animate */
+.dark-mode-toggle .icon{
+  position:absolute;
   font-size: 1.2rem;
-  cursor: pointer;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: opacity .25s, transform .25s;
+}
+.icon-sun{ opacity:1; transform: rotate(0deg) scale(1); }
+.icon-moon{ opacity:0; transform: rotate(-90deg) scale(.8); }
+
+/* Dark theme overrides (your ThemeService sets html[data-theme="dark"]) */
+html[data-theme="dark"] .dark-mode-toggle{
+  --bg: rgba(255,255,255,.07);
+  --hover-bg: rgba(255,255,255,.12);
+  --text: #fff;
+  --border: rgba(255,255,255,.25);
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+}
+html[data-theme="dark"] .dark-mode-toggle .icon-sun{
+  opacity:0; transform: rotate(90deg) scale(.8);
+}
+html[data-theme="dark"] .dark-mode-toggle .icon-moon{
+  opacity:1; transform: rotate(0deg) scale(1);
 }
 
-.dark-mode-toggle:hover {
-  background-color: var(--btn-hover-bg);
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce){
+  .dark-mode-toggle, .dark-mode-toggle .icon{ transition:none; }
 }
-
 /* Light mode defaults */
 :root {
   --btn-bg: #f0f0f0;

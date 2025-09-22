@@ -1,7 +1,13 @@
 <!-- Floating button -->
-<button class="dark-mode-toggle" (click)="themeService.toggleTheme()">
-  🌓
+  <button
+  class="dark-mode-toggle"
+  (click)="themeService.toggleTheme()"
+  aria-label="Toggle dark mode"
+  title="Toggle dark mode"
+>
+  <span class="icon icon-sun" aria-hidden="true">🌓</span>
 </button>
+
 
 <router-outlet></router-outlet>
 

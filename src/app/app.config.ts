@@ -8,6 +8,7 @@ import { routes } from './app.routes';
 import { enableIndexedDbPersistence, enableMultiTabIndexedDbPersistence } from 'firebase/firestore';
 import { provideServiceWorker } from '@angular/service-worker';
 
+
 import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
@@ -18,7 +19,7 @@ export const appConfig: ApplicationConfig = {
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideAuth(() => getAuth()),
     provideServiceWorker('ngsw-worker.js', {
-      enabled: environment.production,               // or !isDevMode()
+      enabled: environment.production,              
       registrationStrategy: 'registerWhenStable:30000',
     }),
 
