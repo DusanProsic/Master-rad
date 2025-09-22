@@ -173,10 +173,23 @@ export class FinancePage implements OnDestroy {
 
   // Totals
   private calcTotals = (entries: Entry[]): Totals => {
-    const income = entries.filter(e => e.type === 'income').reduce((s, e) => s + (e.amount || 0), 0);
-    const expense = entries.filter(e => e.type === 'expense').reduce((s, e) => s + (e.amount || 0), 0);
-    return { income, expense, savings: income - expense };
+  const toRSD = (amt: number, from: CurrencyCode) =>
+    this.currencySvc.convert(amt || 0, from, 'RSD');
+
+  const income = entries
+    .filter(e => e.type === 'income')
+    .reduce((s, e) => s + toRSD(e.amount, e.currency as CurrencyCode), 0);
+
+  const expense = entries
+    .filter(e => e.type === 'expense')
+    .reduce((s, e) => s + toRSD(e.amount, e.currency as CurrencyCode), 0);
+
+  return {
+    income: Math.round(income * 100) / 100,
+    expense: Math.round(expense * 100) / 100,
+    savings: Math.round((income - expense) * 100) / 100,
   };
+};
 
   // Goal helpers for list rendering
   getGoalName(goalId?: string | null): string {

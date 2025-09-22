@@ -1,73 +1,69 @@
+// currency.service.ts
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 export type CurrencyCode = 'RSD' | 'EUR' | 'USD'; // extend as needed
-
 type Rates = Record<CurrencyCode, number>;
-// All rates are relative to the baseCurrency
+
+/**
+ * ✅ Rates are ALWAYS relative to EUR (EUR = 1).
+ * UI base (what you show on Dashboard) is separate and can be changed freely.
+ */
 @Injectable({ providedIn: 'root' })
 export class CurrencyService {
-  private keyBase = 'baseCurrency';
-  private keyRates = 'fxRates';
+  private keyUiBase = 'baseCurrency'; // UI selection (kept for compatibility)
+  private keyRates  = 'fxRates';      // EUR-based rates
 
-  // Base currency used for UI totals & charts
-  private baseSubject = new BehaviorSubject<CurrencyCode>(this.readBase());
-  baseCurrency$ = this.baseSubject.asObservable();
-
-  // Simple rates map (1 base = rates[currency] units of that currency)
-  private ratesSubject = new BehaviorSubject<Rates>(this.readRates());
-  rates$ = this.ratesSubject.asObservable();
-
-  get base(): CurrencyCode { return this.baseSubject.value; }
-  get rates(): Rates { return this.ratesSubject.value; }
-
+  // --- UI base (what the user sees) ---
+  private uiBaseSubject = new BehaviorSubject<CurrencyCode>(this.readUiBase());
+  /** Kept for compatibility with your code: */
+  baseCurrency$ = this.uiBaseSubject.asObservable();
+  get base(): CurrencyCode { return this.uiBaseSubject.value; }
   setBaseCurrency(next: CurrencyCode) {
-    this.baseSubject.next(next);
-    localStorage.setItem(this.keyBase, next);
+    this.uiBaseSubject.next(next);
+    localStorage.setItem(this.keyUiBase, next);
   }
 
+  // --- Rates (ALWAYS EUR-based) ---
+  private ratesSubject = new BehaviorSubject<Rates>(this.readRatesEURBase());
+  rates$ = this.ratesSubject.asObservable();
+  get rates(): Rates { return this.ratesSubject.value; }
+
+  /** Replace the EUR-based map (EUR must be 1). */
   setRates(next: Rates) {
+    if (!next || next.EUR !== 1) throw new Error('Rates must be EUR-based with EUR=1');
     this.ratesSubject.next(next);
     localStorage.setItem(this.keyRates, JSON.stringify(next));
   }
 
-  /** Convert amount from -> to using current base/rates */
+  /**
+   * Convert amount FROM -> TO using EUR-based rates:
+   * amount_in_EUR = amount / rate[from];  result = amount_in_EUR * rate[to]
+   */
   convert(amount: number, from: CurrencyCode, to: CurrencyCode): number {
     if (!amount || from === to) return amount || 0;
-
-    // Interpret rates as: 1 BASE = rates[currency] CURRENCY
-    // Convert "from" to BASE, then BASE to "to"
-    const r = this.rates;
-    const base = this.base;
-
-    // from -> BASE
-    const amountInBase =
-      from === base ? amount : amount / (r[from] || 1);
-
-    // BASE -> to
-    const out =
-      to === base ? amountInBase : amountInBase * (r[to] || 1);
-
-    return out;
+    const rFrom = this.rates[from];
+    const rTo   =  this.rates[to];
+    if (!rFrom || !rTo) return amount;
+    return (amount / rFrom) * rTo;
   }
 
-  // Defaults (pick whatever you like). Assume BASE=RSD.
-  private readBase(): CurrencyCode {
-    const saved = localStorage.getItem(this.keyBase) as CurrencyCode | null;
-    return saved ?? 'RSD';
+  // --- storage helpers ---
+  private readUiBase(): CurrencyCode {
+    return (localStorage.getItem(this.keyUiBase) as CurrencyCode) ?? 'RSD';
   }
 
-  private readRates(): Rates {
+  private readRatesEURBase(): Rates {
     const saved = localStorage.getItem(this.keyRates);
     if (saved) return JSON.parse(saved);
-    // Example defaults (update later / swap in API)
-    // 1 RSD = 0.0085 EUR? No; our model: 1 BASE=RSD -> rates[currency]
-    // So rates here mean: 1 RSD = X currency
-    // Pick something stable-ish; you’ll replace later anyway.
+    // sensible defaults (EUR=1)
     return {
-      RSD: 1,        // always 1 for base
-      EUR: 0.0085,   // 1 RSD ≈ 0.0085 EUR
-      USD: 0.0093,   // 1 RSD ≈ 0.0093 USD
+      EUR: 1,
+      USD: 1.08,
+      RSD: 117.2,
     };
   }
 }
+
+localStorage.removeItem('fxRates');
+localStorage.removeItem('baseCurrency');

@@ -7,39 +7,61 @@
 </header>
   <div class="container page">
     <!-- Summary cards -->
-    <section class="grid cards-3">
-      <article class="card stat-card">
-        <p class="stat-title">Income</p>
-        <div class="stat-value">{{ (totals$ | async)?.income | currency:'USD':'symbol':'1.0-0' }}</div>
-      </article>
+    <div class="currency-switch">
+      <button class="btn-ghost" (click)="cycleBase()">
+        Currency: {{ (base$ | async) }}
+      </button>
+      <!-- Or a dropdown:
+      <select (change)="setBase(($event.target as HTMLSelectElement).value as any)">
+        <option *ngFor="let c of ['RSD','EUR','USD']" [value]="c" [selected]="(base$ | async)===c">{{ c }}</option>
+      </select>
+      -->
+    </div>
+  </div>
 
-      <article class="card stat-card">
-        <p class="stat-title">Expenses</p>
-        <div class="stat-value">{{ (totals$ | async)?.expense | currency:'USD':'symbol':'1.0-0' }}</div>
-      </article>
 
-      <article class="card stat-card">
-        <p class="stat-title">Savings</p>
-        <div class="stat-value">{{ (totals$ | async)?.savings | currency:'USD':'symbol':'1.0-0' }}</div>
-      </article>
-    </section>
+<div class="container page">
+  <!-- Summary cards -->
+  <ng-container *ngIf="(base$ | async) as base">
+  <section class="grid cards-3">
+    <article class="card stat-card">
+      <p class="stat-title">Income</p>
+      <div class="stat-value">
+        {{ ((totals$ | async)?.income ?? 0) | currency:(base || 'RSD'):'symbol':'1.0-0' }}
+      </div>
+    </article>
 
-    <!-- Chart + Monthly summary -->
-    <section class="grid grid-2 dashboard-split">
-      <article class="card chart-card">
-        <app-finance-chart [totals$]="totals$"></app-finance-chart>
-      </article>
+    <article class="card stat-card">
+      <p class="stat-title">Expenses</p>
+      <div class="stat-value">
+        {{ ((totals$ | async)?.expense ?? 0) | currency:(base || 'RSD'):'symbol':'1.0-0' }}
+      </div>
+    </article>
 
-      <article class="card monthly-card" *ngIf="monthlyTotals">
-        <h3 class="section-title">This Month</h3>
-        <div class="monthly-rows">
-          <div><strong>Income:</strong> {{ monthlyTotals.income | currency:'USD':'symbol':'1.0-0' }}</div>
-          <div><strong>Expenses:</strong> {{ monthlyTotals.expense | currency:'USD':'symbol':'1.0-0' }}</div>
-          <div><strong>Savings:</strong> {{ (monthlyTotals.income - monthlyTotals.expense) | currency:'USD':'symbol':'1.0-0' }}</div>
-        </div>
-      </article>
-    </section>
+    <article class="card stat-card">
+      <p class="stat-title">Savings</p>
+      <div class="stat-value">
+        {{ ((totals$ | async)?.savings ?? 0) | currency:(base || 'RSD'):'symbol':'1.0-0' }}
+      </div>
+    </article>
+  </section>
 
+  <section class="grid grid-2 dashboard-split">
+    <article class="card chart-card">
+      <app-finance-chart [totals$]="totals$"></app-finance-chart>
+    </article>
+
+   <article class="card monthly-card" *ngIf="(monthlyTotals$ | async) as m">
+  <h3 class="section-title">This Month</h3>
+  <div class="monthly-rows">
+    <div><strong>Income:</strong>  {{ m.income | currency:(base || 'RSD'):'symbol':'1.0-0' }}</div>
+<div><strong>Expenses:</strong> {{ m.expense | currency:(base || 'RSD'):'symbol':'1.0-0' }}</div>
+<div><strong>Savings:</strong>  {{ (m.income - m.expense) | currency:(base || 'RSD'):'symbol':'1.0-0' }}</div>
+
+  </div>
+</article>
+  </section>
+</ng-container>
     <!-- Goals preview -->
     <section class="card goals-preview">
       <div class="section-header">
