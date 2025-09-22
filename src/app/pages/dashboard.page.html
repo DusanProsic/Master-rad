@@ -11,11 +11,9 @@
       <button class="btn-ghost" (click)="cycleBase()">
         Currency: {{ (base$ | async) }}
       </button>
-      <!-- Or a dropdown:
-      <select (change)="setBase(($event.target as HTMLSelectElement).value as any)">
-        <option *ngFor="let c of ['RSD','EUR','USD']" [value]="c" [selected]="(base$ | async)===c">{{ c }}</option>
-      </select>
-      -->
+      
+    
+    
     </div>
   </div>
 

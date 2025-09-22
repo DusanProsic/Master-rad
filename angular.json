@@ -5,7 +5,6 @@
   "projects": {
     "Master-rad": {
       "projectType": "application",
-      "schematics": {},
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
@@ -13,42 +12,31 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/<your-project-name>",
-    "index": "src/index.html",
-    "browser": "src/main.ts",
-    "polyfills": ["zone.js"],
+            "outputPath": "dist/Master-rad",
+            "index": "src/index.html",
+            "browser": "src/main.ts",
+            "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
-      "src/assets",
-              {
-                "glob": "manifest.webmanifest",
-                "input": "src/",
-                 "output": "/"
-              }
+              "src/assets",
+              { "glob": "manifest.webmanifest", "input": "src/", "output": "/" }
             ],
             "styles": [
               "src/styles.css",
-               "src/styles/dark-mode.css"
+              "src/styles/dark-mode.css"
             ],
             "scripts": []
+            
+            
           },
           "configurations": {
             "production": {
               "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "2MB",
-                  "maximumError": "3MB"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
-                }
+                { "type": "initial", "maximumWarning": "2MB", "maximumError": "3MB" },
+                { "type": "anyComponentStyle", "maximumWarning": "4kB", "maximumError": "8kB" }
               ],
-              "outputHashing": "all",
-              "serviceWorker": true
+              "outputHashing": "all"
             },
             "development": {
               "optimization": false,
@@ -61,46 +49,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-    "buildTarget": "<your-app>:build"
-  },
+            "buildTarget": "Master-rad:build"
+          },
           "configurations": {
-            "production": {
-              "buildTarget": "Master-rad:build:production"
-            },
-            "development": {
-              "buildTarget": "Master-rad:build:development"
-            }
+            "production": { "buildTarget": "Master-rad:build:production" },
+            "development": { "buildTarget": "Master-rad:build:development" }
           },
           "defaultConfiguration": "development"
-        },
-        "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n"
-        },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ],
-            "tsConfig": "tsconfig.spec.json",
-            "assets": [
-              {
-                "glob": "**/*",
-                "input": "public"
-              }
-            ],
-            "styles": [
-              "src/styles.css",
-               "src/styles/dark-mode.css"
-             
-            ],
-            "scripts": []
-          }
         }
       }
     }
-  },
+  }
+,
   "cli": {
     "analytics": "e376a5aa-4b3b-42d5-be98-0b248883c431"
   },
