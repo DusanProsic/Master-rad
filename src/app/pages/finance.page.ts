@@ -6,6 +6,7 @@ import { BehaviorSubject, Observable, combineLatest, map, takeUntil, Subject } f
 import { EntryService, Entry, NewEntry } from '../services/entry.service';
 import { GoalService, Goal } from '../services/goal.service';
 import { FinanceChartComponent } from '../components/finance-chart.component';
+import { CurrencyService, CurrencyCode } from '../services/currency.service';
 
 
 type Totals = { income: number; expense: number; savings: number };
@@ -48,14 +49,16 @@ export class FinancePage implements OnDestroy {
   constructor(
     private fb: FormBuilder,
     private entryService: EntryService,
-    private goalService: GoalService
+    private goalService: GoalService,
+     private currencySvc: CurrencyService, 
   ) {
-    // IMPORTANT: goal is optional => initialize with null, not ''.
+   
     this.financeForm = this.fb.group({
       description: [''],
-  amount: [null, [Validators.required]],   // (optional) add Validators.min(0.01)
+  amount: [null, [Validators.required]],   
   type: ['expense', [Validators.required]],
-  goalId: [null],       // <- null means "no goal selected"
+  goalId: [null],    
+  currency: ['RSD', [Validators.required]],   
     });
 
     this.entries$ = this.entryService.getEntries();
@@ -63,18 +66,27 @@ export class FinancePage implements OnDestroy {
 
     // Build caches and update preview box initially
     combineLatest([this.goals$, this.entries$])
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(([goals, entries]) => {
-        this.latestEntries = entries ?? [];
-        this.goalsMap = Object.fromEntries(goals.map(g => [g.id, g]));
-        const sums: Record<string, number> = {};
-        for (const e of entries) {
-          if (e.type !== 'income' || !e.goalId) continue;
-          sums[e.goalId] = (sums[e.goalId] || 0) + (e.amount || 0);
-        }
-        this.goalIncomeMap = sums;
-        this.updateSelectedGoalPreview();
-      });
+  .pipe(takeUntil(this.destroy$))
+  .subscribe(([goals, entries]) => {
+    this.latestEntries = entries ?? [];
+    this.goalsMap = Object.fromEntries(goals.map(g => [g.id, g]));
+
+    const sums: Record<string, number> = {};
+    for (const e of entries) {
+      if (e.type !== 'income' || !e.goalId) continue;
+      const g = this.goalsMap[e.goalId];
+      if (!g) continue;
+
+      const from = (e.currency as CurrencyCode) || this.currencySvc.base;
+      const to = (g.currency as CurrencyCode) || this.currencySvc.base;
+
+      const converted = this.currencySvc.convert(Number(e.amount) || 0, from, to);
+      sums[e.goalId] = (sums[e.goalId] || 0) + converted;
+    }
+
+    this.goalIncomeMap = sums;
+    this.updateSelectedGoalPreview();
+  });
 
     // Recompute preview when these change
     ['goalId', 'amount', 'type'].forEach(ctrl => {
@@ -119,6 +131,7 @@ export class FinancePage implements OnDestroy {
   const payload: NewEntry = {
     amount: Number(v.amount) || 0,
     type: (v.type as 'income' | 'expense') || 'expense',
+     currency: (v.currency as any) || 'RSD',
     ...(v.description ? { description: v.description as string } : {}),
     ...(includeGoal ? { goalId: v.goalId as string } : {}), // omit goalId for expenses/none
   };
@@ -128,7 +141,7 @@ export class FinancePage implements OnDestroy {
     this.cancelEdit();
   } else {
     await this.entryService.addEntry(payload);
-    this.financeForm.reset({ description: '', amount: null, type: 'expense', goalId: null });
+    this.financeForm.reset({ description: '', amount: null, type: 'expense', goalId: null, currency: v.currency || 'RSD', });
     this.updateSelectedGoalPreview?.();
   }
 }
@@ -140,6 +153,7 @@ export class FinancePage implements OnDestroy {
       amount: e.amount,
       type: e.type,
       goalId: e.goalId ?? null,
+      currency: e.currency || 'RSD',
     });
     this.updateSelectedGoalPreview();
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -151,8 +165,9 @@ export class FinancePage implements OnDestroy {
   }
 
   cancelEdit() {
+    const currentCurrency = this.financeForm.get('currency')?.value || 'RSD';
     this.editingId = null;
-    this.financeForm.reset({ description: '', amount: 0, type: 'expense', goalId: null });
+    this.financeForm.reset({ description: '', amount: 0, type: 'expense', goalId: null, currency: currentCurrency,});
     this.updateSelectedGoalPreview();
   }
 
@@ -183,41 +198,61 @@ export class FinancePage implements OnDestroy {
     return Math.max(0, goal.target - contributed);
   }
 
+  formatEntryAmount(e: Entry): string {
+  const code = (e.currency as CurrencyCode) || this.currencySvc.base;
+  return `${(Number(e.amount) || 0).toFixed(2)} ${code}`;
+}
+
+getEntryAmountInGoalCurrency(e: Entry): number | null {
+  if (!e.goalId) return null;
+  const g = this.goalsMap[e.goalId];
+  if (!g) return null;
+  const from = (e.currency as CurrencyCode) || this.currencySvc.base;
+  const to = (g.currency as CurrencyCode) || this.currencySvc.base;
+  return Math.round(this.currencySvc.convert(Number(e.amount) || 0, from, to) * 100) / 100;
+}
+
   // Selected goal PREVIEW (after this entry)
-  private updateSelectedGoalPreview() {
-    const gid = this.financeForm.get('goalId')?.value as string | null;
-    const amount = Number(this.financeForm.get('amount')?.value) || 0;
-    const type = this.financeForm.get('type')?.value as 'income' | 'expense';
+private updateSelectedGoalPreview() {
+  const gid = this.financeForm.get('goalId')?.value as string | null;
+  const amount = Number(this.financeForm.get('amount')?.value) || 0;
+  const type = this.financeForm.get('type')?.value as 'income' | 'expense';
+  const formCurr = (this.financeForm.get('currency')?.value as CurrencyCode) || this.currencySvc.base;
 
-    if (!gid) {
-      this.selectedGoalName = '';
-      this.selectedGoalTarget = 0;
-      this.selectedGoalProgress = 0;
-      this.selectedGoalRemaining = 0;
-      return;
-    }
-
-    const goal = this.goalsMap[gid];
-    if (!goal || !goal.target) {
-      this.selectedGoalName = '';
-      this.selectedGoalTarget = 0;
-      this.selectedGoalProgress = 0;
-      this.selectedGoalRemaining = 0;
-      return;
-    }
-
-    // current totals
-    const current = this.goalIncomeMap[gid] || 0;
-
-    // PREVIEW after this entry:
-    // only income contributes; expenses do not reduce goal progress
-    const previewContrib = type === 'income' ? current + Math.max(0, amount) : current;
-
-    this.selectedGoalName = goal.name;
-    this.selectedGoalTarget = goal.target;
-    this.selectedGoalProgress = Math.min(100, (previewContrib / goal.target) * 100);
-    this.selectedGoalRemaining = Math.max(0, goal.target - previewContrib);
+  if (!gid) {
+    this.selectedGoalName = '';
+    this.selectedGoalTarget = 0;
+    this.selectedGoalProgress = 0;
+    this.selectedGoalRemaining = 0;
+    return;
   }
+
+  const goal = this.goalsMap[gid];
+  if (!goal || !goal.target) {
+    this.selectedGoalName = '';
+    this.selectedGoalTarget = 0;
+    this.selectedGoalProgress = 0;
+    this.selectedGoalRemaining = 0;
+    return;
+  }
+
+  // current contributed (already in goal currency thanks to sums loop)
+  const current = this.goalIncomeMap[gid] || 0;
+
+  // only income contributes; convert the form amount FROM form currency → goal currency
+  const addInGoalCurrency =
+    type === 'income'
+      ? this.currencySvc.convert(Math.max(0, amount), formCurr, goal.currency as CurrencyCode)
+      : 0;
+
+  const previewContrib = current + addInGoalCurrency;
+
+  this.selectedGoalName = goal.name;
+  this.selectedGoalTarget = goal.target;
+  this.selectedGoalProgress = Math.min(100, (previewContrib / goal.target) * 100);
+  this.selectedGoalRemaining = Math.max(0, goal.target - previewContrib);
+}
+
 
   ngOnDestroy(): void {
     this.destroy$.next();

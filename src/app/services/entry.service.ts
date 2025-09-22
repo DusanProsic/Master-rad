@@ -10,12 +10,12 @@ export type EntryType = 'income' | 'expense';
 export interface NewEntry {
   amount: number;
   type: EntryType;
-  category?: string;
   description?: string;
-  date?: any;
   goalId?: string;
+   currency: CurrencyCode; 
 }
-export interface Entry extends NewEntry { id: string; }
+export interface Entry extends NewEntry { id: string; createdAt?: any; }
+export type CurrencyCode = 'RSD' | 'EUR' | 'USD' ; 
 
 @Injectable({ providedIn: 'root' })
 export class EntryService {
@@ -27,21 +27,36 @@ export class EntryService {
     return collection(this.firestore, `users/${uid}/entries`);
   }
 
+  /** Drop undefined fields so Firestore doesn't throw */
+  private dropUndefined<T extends Record<string, any>>(obj: T): T {
+    const out: any = {};
+    for (const k of Object.keys(obj)) {
+      const v = (obj as any)[k];
+      if (v !== undefined) out[k] = v;
+    }
+    return out as T;
+  }
+
+  /** Real-time list ordered by creation time */
   getEntries(): Observable<Entry[]> {
-    const q = query(this.getUserEntriesCollection(), orderBy('date', 'desc'));
+    const q = query(this.getUserEntriesCollection(), orderBy('createdAt', 'desc'));
     return collectionData(q, { idField: 'id' }) as Observable<Entry[]>;
   }
 
   async addEntry(entry: NewEntry) {
-    const entryDoc = { ...entry, createdAt: Timestamp.now(), date: entry.date ?? Timestamp.now() };
-    return addDoc(this.getUserEntriesCollection(), entryDoc);
+    const payload = this.dropUndefined({
+      ...entry,
+      amount: Number(entry.amount) || 0,
+      createdAt: Timestamp.now(),
+    });
+    return addDoc(this.getUserEntriesCollection(), payload);
   }
 
   async updateEntry(entryId: string, patch: Partial<NewEntry>): Promise<void> {
     const uid = this.auth.currentUser?.uid;
     if (!uid) throw new Error('User not authenticated');
     const ref = doc(this.firestore, `users/${uid}/entries/${entryId}`);
-    return updateDoc(ref, patch as any);
+    return updateDoc(ref, this.dropUndefined(patch as any));
   }
 
   async deleteEntry(entryId: string): Promise<void> {
